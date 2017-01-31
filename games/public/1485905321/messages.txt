@@ -1,6 +1,0 @@
-a: sa
-a: ds
-a: sdfdsf
-a: dsfgdf
-a: 55
-a: ggjgh

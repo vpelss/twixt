@@ -1,1 +1,0 @@
-{"points":{"12_18":"a","13_16":"a"},"moves":{"12_18_13_16":{"move_count":1,"move_owner":"a"}},"move_count":1,"next_move":null,"number_of_users":1,"user1":"a","game":"1485905321"}
