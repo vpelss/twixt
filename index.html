@@ -1,0 +1,730 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+
+<html>
+<head>
+  <title>Twixt</title>
+<link rel="stylesheet" href="ui/jquery-ui.css">
+
+<STYLE TYPE="text/css">
+
+#board
+{
+position:relative;
+border: 1px solid black;
+}
+
+#game_number
+{
+float: left;
+padding-right: 10px;
+}
+
+.dot
+{
+float: left;
+background-image: url("./images/dot.png");
+z-index: -1;
+box-sizing: border-box;
+}
+
+.corner
+{
+float: left;
+z-index: -1;
+box-sizing: border-box;
+}
+
+.dot:hover
+{
+background-color: yellow;
+}
+
+.marker:hover
+{
+background-color: green;
+}
+
+.nne , .ene , .ese , .sse , .ssw , .esw , .wnw , .nnw
+{
+position:absolute;
+z-index: -1;
+}
+
+.marker
+{
+position:absolute;
+z-index: 1;
+}
+
+.top_line
+{
+border-bottom: thin solid red;
+}
+
+.bottom_line
+{
+border-top: thin solid red;
+}
+
+.right_line
+{
+border-left: thin solid blue;
+}
+
+.left_line
+{
+border-right: thin solid blue;
+}
+
+#chat_board
+{
+overflow: scroll;
+height: 100%;
+}
+
+#chat_board_resizable
+{
+height: 50px;
+}
+
+#dialog-waiting /*center spinner*/
+  {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  }
+
+#accordion
+  {
+  width: 80%;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50% , 0%);
+  }
+
+</STYLE>
+
+<script src="jquery.js"></script>
+<script src="ui/jquery-ui.js"></script>
+<script src="js.cookie.js"></script>
+<script>
+    $( function() {
+    $( "#dialog-message" ).dialog({
+      modal: true,
+       autoOpen: false,
+      buttons: {
+        Ok: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+  } );
+
+$( function()
+    {
+    $( "#tabs" ).tabs(
+      {
+      //collapsible: true ,
+       //active: false
+      });
+    } );
+
+$( function() {
+    $( "#chat_board_resizable" ).resizable();
+  } );
+
+</script>
+
+</head>
+
+<body>
+
+<div id='board'></div>
+
+<div id='game_number'></div>
+
+<div id='next_move'></div>
+
+<div id='message_div'>
+<form id='message_form'>
+<input name="command" type="hidden" value="send_chat" id='command_send_chat'>
+<input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
+<input type='submit' id='message_form_submit' onclick='return send_chat();'>
+</form>
+</div>
+
+<div id='chat_board_resizable' class="ui-widget-content">
+<pre id='chat_board' >Chat Board</pre>
+</div>
+
+<div id="dialog-message" title="Twixt"></div>
+<div id="dialog-waiting"><img src='./images/flash.gif'></div>
+
+<script>$( "#dialog-waiting" ).hide();</script>
+
+<div id="tabs">
+
+<ul>
+    <li><a href="#list_games" onclick='get_games();'>Games</a></li>
+    <li><a href="#form_create_game">Create Game</a></li>
+    <li><a href="#form_login">Login</a></li>
+    <li><a href="#form_logout">Logout</a></li>
+    <li><a href="#form_register">Register</a></li>
+    <li><a href="#form_forgot_password">Forgot Password</a></li>
+    <li><a href="#form_forgot_username">Forgot Username</a></li>
+    <li><a href="#form_reset_password">Reset Password</a></li>
+</ul>
+
+<div id='list_games'>
+</div>
+
+<form id='form_create_game'>
+  <input name="command" type="hidden" value="create_game" id='command_create_game'>
+  <p>
+    <input type='radio' name='public_private' value='public' checked='true'> Public. Anyone can join. First come first serve.
+  </p>
+  <p>
+  <input type='radio' name='public_private' value='private'> Private. You must send game link to a player.
+  </p>
+  <p>
+    <input type='submit'  onclick='return form_call("form_create_game");'>
+  </p>
+</form>
+
+  <form id='form_login'>
+<input name="command" type="hidden" value="login" id='command_login'>
+    <p><input type='text' name="username" placeholder="username" id='username_login'></p>
+    <p><input type='password' name="password" placeholder="password" id='password_login'></p>
+    <p><input type='submit'  onclick='return form_call("form_login"); '></p>
+    </form>
+
+  <form id='form_logout'>
+<input name="command" type="hidden" value="login" id='command_logout'>
+    <p><input type='submit' value='Logout' onclick='return logout();'></p>
+    </form>
+
+<form  id='form_register'>
+ <input name="command" type="hidden" value="register" id='command_register'>
+    <p><input type='text' name="username" placeholder="username" id='username_register'></p>
+    <p><input type='password' name="password" placeholder="password" id='password_register'></p>
+    <p><input type='text' name="email" placeholder="email" id='email_register'></p>
+    <p><input type='submit'  onclick='return form_call("form_register");'></p>
+</form>
+
+<form id='form_forgot_password'>
+    <input name="command" type="hidden" value="forgot_password">
+    <p><input type='text'  name="username" placeholder="username"></p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_password");'></p>
+</form>
+
+<form id='form_forgot_username'>
+    <input name="command" type="hidden" value="forgot_username">
+    <p><input type='text'  name="email" placeholder="email"></p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_username");'></p>
+</form>
+
+<form id='form_reset_password'>
+  <input name="command" type="hidden" value="reset_password">
+    <p><input type='text'   name='username' placeholder="username" id='username_reset_password'></p>
+    <p><input type='password' name="oldpassword" placeholder="old password" id='old_password_reset_password'></p>
+    <p><input type='password' name="newpassword" placeholder="new password" id='new_password_reset_password'></p>
+    <p><input type='submit'  onclick='return form_call("form_reset_password");'></p>
+  </form>
+
+</div>
+
+<p></p>
+
+<script>
+//get url game requests!!!!
+if ( gup('game') !== '' && gup('public_private') !== '' )
+  {
+  get_game( gup('game') , gup('public_private'));
+  }
+
+function gup( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results === null )
+    return "";
+  else
+    return results[1];
+}
+
+function send_chat()
+{
+var res = form_call("message_form");
+$('#chat_text').val('') ;
+return res;
+}
+
+function form_done(data)
+{
+$("#dialog-waiting" ).hide();
+$('#dialog-message').html(data);
+$('#dialog-message').dialog( "open" );
+}
+
+function form_call( form_id_string )
+{
+$( "#dialog-waiting" ).show();
+var mydata = $( '#' + form_id_string ).serialize();
+var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
+jqxhr.done( function(data) { form_done( data ); }  );
+jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+return false; //so form submit does not reset page and upset ajax
+}
+
+function get_games_done(data)
+{
+$("#dialog-waiting" ).hide();
+var game_number;
+var result =  JSON.parse( data );
+if (result.pass === 0)
+  {
+  $('#dialog-message').html( result.message );
+  $('#dialog-message').dialog( "open" );
+  return 0;
+  }
+var username = Cookies.get('username');
+var html = 'Public</br>';
+//my_array = result.games.public;
+//my_array.foreach( function(game_number) { html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ') </a></br>';
+// } );
+var pathArray = location.href.split( '?' );
+var url = pathArray[0];
+//var url = window.location.href;
+//var url = window.location.host;
+var url_link ;
+
+for(game_number in result.games.public)
+  if ( result.games.public.hasOwnProperty(game_number) )
+    {
+    url_link = url + "?game=" + game_number + "&public_private=public";
+    html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ')</a>' + " " + url_link + '</br>' ;
+    }
+html += 'Private</br>';
+for(game_number in result.games.private)
+  if ( result.games.private.hasOwnProperty(game_number) )
+    {
+    url_link = url + "?game=" + game_number + "&public_private=" + username;
+    html += '<a href=# onclick=get_game("' + game_number + '","' + username + '");return(0); >' + game_number + ' (' + result.games.private[game_number].user1 + ' , ' + result.games.private[game_number].user2 + ') </a>' + " " + url_link + '</br>' ;
+     }
+$( '#list_games' ).html( html );
+}
+
+function get_games( )
+{
+$( "#dialog-waiting" ).show();
+var mydata = 'command=get_games';
+var jqxhr = $.post( "./twixt.cgi", mydata , 'json');
+jqxhr.done( function(data) { get_games_done( data ); }  );
+jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+return false; //so form submit does not reset page and upset ajax
+}
+
+function get_game( game , public_private )
+{
+$( "#dialog-waiting" ).show();
+build_board();
+$('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
+Cookies.set('game', game);
+Cookies.set('public_private', public_private);
+//get_game_moves( game , public_private );
+//setInterval(function(){ get_chat(); }, 3000);
+setInterval( function(){update_board();} , 3000);
+}
+function update_board_done(data)
+{
+$("#dialog-waiting" ).hide();
+var result =  JSON.parse( data );
+if ( result.pass == 1 )
+  { //user data comming
+      next_move = result.next_move;
+  var message = "Next move: " + next_move + "";
+  $('#next_move').html( message );
+  //place pegs received from data????
+  place_moves( result );
+  //place chat text
+  $('#chat_board').html( result.chat_text );
+  $('#chat_board').scrollTop( 10000 ); //scroll to bottom
+  }
+else
+  { //fail
+  $('#dialog-message').html( result.message );
+  $('#dialog-message').dialog( "open" );
+  }
+
+//place pegs received from data????
+//place_moves( result );
+}
+
+function update_board()
+{
+//$( "#dialog-waiting" ).show();
+var mydata = 'command=update_board';
+var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
+jqxhr.done( function(data) { update_board_done( data ); }  );
+jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+return false; //so form submit does not reset page and upset ajax
+}
+
+function place_moves( result )
+{
+var path_to_images = './images/';
+var moves = result.moves;
+//clear old moves
+$('#moves').html('');
+//var message = moves ;
+var x1 , y1 , x2 , y2;
+for (var move in moves)
+  if ( moves.hasOwnProperty(move) )
+    {
+    [ x1 , y1 , x2 , y2 ]= move.split( '_' ) ;
+
+    var dx = x1 - x2;
+    var dy = y1 - y2;
+    var x_offset;
+    var y_offset;
+    var class_to_use;
+
+    if ( ( dx == -1 ) && ( dy == -2 ) )
+      {//nnw from point 1
+      x_offset = 0;
+      y_offset = 0;
+      class_to_use = 'nnw';
+      }
+    if ( ( dx == 1 ) && ( dy == 2 ) )
+      {//sse from point 1
+      x_offset = -1;
+      y_offset = -2;
+      class_to_use = 'sse';
+      }
+
+    if ( ( dx == -1 ) && ( dy == 2 ) )
+      {//nne from point 1
+      x_offset = 0;
+      y_offset = -2;
+      class_to_use = 'nne';
+      }
+    if ( ( dx == 1 ) && ( dy == -2 ) )
+      {//ssw from point 1
+      x_offset = -1;
+      y_offset = 0;
+      class_to_use = 'ssw';
+      }
+
+    if ( ( dx == -2 ) && ( dy == 1 ) )
+      {//ene from point 1
+      x_offset = 0;
+      y_offset = -1;
+      class_to_use = 'ene';
+      }
+    if ( ( dx == 2 ) && ( dy == -1 ) )
+      {//esw from point 1
+      x_offset = -2;
+      y_offset = 0;
+      class_to_use = 'esw';
+      }
+
+    if ( ( dx == -2 ) && ( dy == -1 ) )
+      {//ese from point 1
+      x_offset = 0;
+      y_offset = 0;
+      class_to_use = 'ese';
+      }
+    if ( ( dx == 2 ) && ( dy == 1 ) )
+      {//wnw from point 1
+      x_offset = -2;
+      y_offset = -1;
+      class_to_use = 'wnw';
+      }
+
+    //place moves
+    //add a mov div to div id=moves
+    $('#moves').append("<div id='" + move + "'></div>");
+    //assign class
+    $('#' + move).addClass( class_to_use );
+    //set image
+    var user2_img = '';
+    if ( moves[move].move_owner != result.user1 )
+      {
+      user2_img = '_user2';
+      }
+    var image_file = path_to_images + class_to_use + user2_img + '.png';
+    $('#' + move).css('background' ,  'url(' + image_file + ')' );
+    //set position based on p1
+    $('#' + move).css('top' , ( y_offset + Number(y1) ) * dot_width);
+    $('#' + move).css('left' , ( x_offset + Number(x1) ) * dot_width);
+    }
+
+//set sizes of ALL line / move classes
+$('.sse , .nne , .nnw , .ssw').css('background-size' , two_x + 'px ' + three_x + 'px');
+$('.sse , .nne , .nnw , .ssw').css('width' , two_x );
+$('.sse , .nne , .nnw , .ssw').css('height' , three_x );
+$('.ene , .ese , .wnw , .esw').css('background-size' , three_x + 'px ' + two_x + 'px');
+$('.ene , .ese , .wnw , .esw').css('width' , three_x );
+$('.ene , .ese , .wnw , .esw').css('height' , two_x );
+}
+
+var next_move;
+function old_get_game_moves_done( data )
+{
+$("#dialog-waiting" ).hide();
+var result =  JSON.parse( data );
+if ( result.pass == 1 )
+  { //user data comming
+  next_move = result.next_move;
+  var message = "Next move: " + next_move + "";
+  $('#next_move').html( message );
+  //place pegs received from data????
+  place_moves( result );
+  }
+else
+  { //fail
+  $('#dialog-message').html( result.message );
+  $('#dialog-message').dialog( "open" );
+  }
+
+}
+
+function old_get_game_moves( game , public_private )
+{
+$( "#dialog-waiting" ).show();
+var mydata = 'command=get_game_moves' ;
+var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
+jqxhr.done( function(data) { get_game_moves_done( data ); }  );
+jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+return false; //so form submit does not reset page and upset ajax
+}
+
+function logout()
+{
+if ( confirm('Are you sure?') == 1 )
+    {
+    Cookies.remove('username');
+    Cookies.remove('password');
+    Cookies.remove('game');
+    $('#board').html("");
+    $('#game_number').html("");
+    $('#board').css('width' , '0px' );
+    $('#board').css('height' , '0px' );
+    form_done( 'You have been logged out' );
+    }
+return false; //so form submit does not reset page and upset ajax
+}
+
+var two_x;
+var three_x;
+var dot_width;
+function build_board()
+{
+$('#list_games').html('');
+
+//fill board with pegs
+$('#board').html('');
+$('#board').append("<div CLASS='corner' id=0_0></div>");
+for (x=1 ; x<23 ; x++)
+	{
+	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
+	}
+$('#board').append("<div CLASS='corner' id=23_0></div>");
+for (y=1 ; y<23 ; y++)
+	{
+	for (x=0 ; x<24 ; x++)
+		{
+		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
+		}
+	}
+$('#board').append("<div CLASS='corner' id=0_23></div>");
+for (x=1 ; x<23 ; x++)
+	{
+	$('#board').append("<div CLASS='dot' id=" + x + "_23></div>");
+	}
+$('#board').append("<div CLASS='corner' id=23_23></div>");
+
+//set line class for edges of board
+$( ".dot[id*='_0'" ).addClass('top_line');
+$( ".dot[id*='_23'" ).addClass('bottom_line');
+$( ".dot[id^='0'" ).addClass('left_line');
+$( ".dot[id^='23'" ).addClass('right_line');
+
+//size board
+var board_width = 400;
+dot_width = (board_width / 24);
+two_x = dot_width * 2;
+three_x = dot_width * 3;
+
+//set board size
+$('#board').css('width' , board_width  + 'px' );
+$('#board').css('height' , board_width  + 'px' );
+//set dot sizes
+$('.dot , .corner').css('width' , dot_width +'px' );
+$('.dot , .corner').css('height' , dot_width + 'px' );
+$('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
+
+//div to add moves
+$('#board').append("<div id='moves'></div>");
+
+//div to add legal move markers
+$('#board').append("<div id='markers'></div>");
+
+$( ".dot" ).on("contextmenu",function(){
+     return false;
+   });
+
+$( ".dot" ).mousedown( function( event )
+		{
+    peg_clicked( this.id , event.which );
+		}
+	);
+
+$( ".dot" ).on( "mouseenter", function()
+		{
+		//peg_enter( this.id );
+		}
+	);
+
+$( ".dot" ).on( "mouseleave", function()
+		{
+		//peg_leave( this.id );
+		}
+	);
+
+
+}
+
+function get_h_squared( p1 , p2 )
+{
+var x1 , y1 , x2 , y2;
+[ x1 , y1 , x2 , y2 ]= p1.split( '_' ) ;
+var x1h , y1h , x2h , y2h;
+[ x1h , y1h , x2h , y2h ]= p2.split( '_' ) ;
+var delta_x = Math.abs(x1-x1h);
+var delta_y = Math.abs(y1-y1h);
+var h_squared = (delta_x * delta_x) + (delta_y * delta_y);
+return h_squared;
+}
+
+function peg_enter( id )
+{
+//if ( highlighted_peg === undefined)
+//  { return; }
+//var h_squared = get_h_squared( id , highlighted_peg );
+//if ( h_squared == 5 )
+//  {
+//  $( '#' + id ).css('background-color' , 'green' );
+//  }
+}
+
+function peg_leave( id )
+{
+if ( id != highlighted_peg )
+  {
+  $( '#' + id ).css('background-color' , '' );
+  }
+}
+
+var legal1 , legal2 , legal3 , legal4 , legal5 , legal6 , legal7 , legal8;  //id points to erase later
+function add_legal_moves( id )
+{
+var x1 , y1 , x2 , y2 , x , y , legal_move_id , top , left;
+[ x1 , y1 ]= id.split( '_' ) ;
+
+var marker_array = [[1,-2] , [2,-1] , [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2]];
+
+for(var offset in marker_array)
+    {
+    x = Number(x1) + marker_array[offset][0];
+    y = Number(y1) + marker_array[offset][1];
+    legal_move_point = x.toString() + '_' + y.toString() ;
+    legal_move_id = "#" + legal_move_point;
+    if($(legal_move_id).length !== 0)
+      {//we are on the board. then place.
+      top = $(legal_move_id).position().top;
+      left = $(legal_move_id).position().left;
+      $('#markers').append("<img class='marker' src='./images/x.png' id='marker_" + legal_move_point + "'>");
+      $('#marker_' + legal_move_point ).css('top' , top);
+      $('#marker_' + legal_move_point ).css('left' , left);
+      }
+    }
+
+$( '.marker' ).mousedown( function( event )
+        {
+        peg_clicked( this.id , event.which );
+        } );
+
+//size all x images!
+$('.marker').css('width' , dot_width);
+$('.marker').css('height' , dot_width);
+}
+
+var highlighted_peg;
+function peg_clicked( id , which )
+{
+if (which == 3)
+  {//left click remove red start move
+  $('#' + highlighted_peg).css('background-color' , '');
+  highlighted_peg = undefined;
+  $('#markers').html(''); //delete markers
+  return;
+  }
+if ( next_move != Cookies.get('username') )
+  {//local move block
+  //$('#dialog-message').html('It is not your move yet.');
+  //$('#dialog-message').dialog( "open" );
+  //return 0;
+  }
+if (highlighted_peg === undefined)
+	{
+	//mark peg
+	$('#' + id).css('background-color' , 'red');
+	highlighted_peg = id;
+  add_legal_moves( id );
+	}
+else
+	{
+  if( id.indexOf("marker_") === -1 ) {return;} //fail. illegal move
+  //remove 'marker_' string
+  id = id.replace('marker_', '');
+	//send move
+	send_moves( highlighted_peg + '_' + id );
+  //clear old peg
+	$('#' + highlighted_peg).css('background-color' , '');
+  highlighted_peg = undefined;
+  $('#markers').html(''); //delete markers
+	}
+}
+
+function send_moves_done( data )
+{
+$("#dialog-waiting" ).hide();
+var result =  JSON.parse( data );
+if ( result.pass != 1 )
+  {
+  $('#dialog-message').html(data);
+  $('#dialog-message').dialog( "open" );
+  return;
+  }
+update_board();
+}
+
+function send_moves( move )
+{
+$( "#dialog-waiting" ).show();
+var mydata = 'command=send_move' + '&move=' + move;
+var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
+jqxhr.done( function(data) { send_moves_done( data ); }  );
+jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+return false; //so form submit does not reset page and upset ajax
+}
+
+</script>
+
+</body>
+</html>

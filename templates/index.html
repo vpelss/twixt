@@ -1,0 +1,312 @@
+<!DOCTYPE HTML PUBLIC "-//SoftQuad Software//DTD HoTMetaL PRO 6.0::19990601::extensions to HTML 4.0//EN" "hmpro6.dtd">
+<HTML> 
+  <HEAD> 
+	 <TITLE>WordSearch by Puzzle by Emogic.com %game%</TITLE><LINK
+	 REL="STYLESHEET" HREF="%scripturl%/look.css"> 
+  </HEAD> 
+  <BODY> <SCRIPT TYPE="text/javascript">
+
+function gup( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return results[1];
+}
+
+function toggle(ele)
+		{
+		var stat = document.getElementById(ele).style.display;
+		if (stat == 'none')
+			{
+			document.getElementById(ele).style.display = 'block';
+			}
+	else
+		{
+ 	document.getElementById(ele).style.display = 'none';
+		}
+	}
+
+function doSaveAs()
+{
+if (browserType != "ie") {alert("Not IE. You must right click and select 'Save page as...'")}
+if (document.execCommand) {document.execCommand("SaveAs");}
+};
+
+var LetterPosArray = new Array(0,0);
+var OldLetterPosArray = new Array(0,0);
+var horizvert = 0; //0 is  horiz 1 is vert
+var OldClue = "";
+var CurrentFocus = ""; //ID Name  where letters will be inserted
+var LastCell = "";
+var CurrentClass = 'tdwhiteclass'; //for remembering the class to return the square too
+var NthPosition = 0; //so we can find the next square to type a letter into
+var CurrentPos = new Array(0,0); //CURRENTLY HIGLIGHTED BOX COORDINATES
+
+function ClearBox(cell)
+{
+if (CurrentFocus != "") {document.getElementById(CurrentFocus).className = CurrentClass;} //restore the class name to white
+}
+
+function HighlightBox(CellId)
+{
+if ( CurrentFocus != "" )
+        {
+        document.getElementById(CurrentFocus).className = 'box'; //clear last highlighted box
+        LastCell = CurrentFocus;
+        //need to check foward and back id (x1_y1_x2_y2) and (x2_y2_x1_y1) as user may click of last letter first etc
+ var forwardkey = LastCell + "_" + CellId; //with Cell_
+        var backwardkey = CellId + "_" + LastCell; //with Cell_
+        forwardkey = forwardkey.replace(/Cell_/g,""); //without Cell_
+        backwardkey = backwardkey.replace(/Cell_/g,""); //without Cell_
+        var theword = "";
+        var foundkey = "";
+
+        if (typeof words[forwardkey] != 'undefined') //is this a forward word
+                {
+                theword = words[forwardkey]['word'];
+                foundkey = forwardkey;
+                }
+        if (typeof words[backwardkey] != 'undefined') //is it a backward word
+                {
+                theword = words[backwardkey]['word'];
+                foundkey = backwardkey;
+                }
+
+        //see if there is a match, if so, highlight the letters in match
+        if ( foundkey != "" ) //there is a match
+                        {
+                        HighlightWord(foundkey , '');
+                        //now add to URL so we can save the game
+                        
+																								if (window.location.href.indexOf('?') > 0)
+                                {separator = "&"}
+                        else
+                                {separator = "?"};
+                         if (gup(foundkey) != foundkey) //don't add to URL if it is alraedy there
+                                                //window.location.href        = window.location.href        + separator + foundkey + '=' + foundkey + '#';
+                                                //window.location.href        = window.location.href        + separator + foundkey + '=' + foundkey;
+																																																location.hash =  location.hash + separator + foundkey + '=' + foundkey; //stop reload!
+                        }
+        }
+
+document.getElementById(CellId).className = 'box_selected'; //select/focus the square
+CurrentFocus = document.getElementById(CellId).getAttribute('ID');
+}
+
+function HighlightWord(foundkey , pretext)
+{
+                        var cells = words[foundkey]['letterpositions'];
+                        var length = cells.length;
+                        var element = null;
+                        var worddir = words[foundkey]['direction'];
+                        var wordid = 'word_' + words[foundkey]['word'];
+                        if (pretext == '') document.getElementById(wordid).className = 'wordselected'; //higlight word in list
+                        //find values for end points
+                        var x1 = cells[0][0];
+                        var y1 = cells[0][1];
+                        var x2 = cells[1][0];
+                        var y2 = cells[1][1];
+                        var image1;
+                        var image2;
+                        if (y1 == y2) //hoiz
+                                {
+                                if (x1 < x2)
+                                        {
+                                        image1="dir1l.gif";
+                                        image2="dir1r.gif";
+                                        }
+                                else
+                                        {
+                                        image1="dir1r.gif";
+                                        image2="dir1l.gif";
+                                        }
+                                }
+
+                        if (x1 == x2) //vert
+                                {
+                                if (y1 < y2)
+                                        {
+                                        image1="dir2t.gif";
+                                        image2="dir2b.gif";
+                                        }
+                                else
+                                        {
+                                        image1="dir2b.gif";
+                                        image2="dir2t.gif";
+                                        }
+                                }
+
+                        if (worddir == 3) //backslash
+                                {
+                                if (x1 < x2)
+                                        {
+                                        image1="dir3t.gif";
+                                        image2="dir3b.gif";
+                                        }
+                                else
+                                        {
+                                        image1="dir3b.gif";
+                                        image2="dir3t.gif";
+                                        }
+                                }
+
+                        if (worddir == 4) //forwardslash
+                                {
+                                if (x1 < x2)
+                                        {
+                                        image1="dir4b.gif";
+                                        image2="dir4t.gif";
+                                        }
+                                else
+                                        {
+                                        image1="dir4t.gif";
+                                        image2="dir4b.gif";
+                                        }
+                                }
+
+                        for (var i = 0; i < length; i++)
+                                        {
+                          element = cells[i];
+                          // highlight cell
+                                        var celltomodify = pretext + 'Cell_' + element[0] + '_' + element[1];
+                                        var oldtext = document.getElementById(celltomodify).innerHTML;
+                                        var filename = '%scripturl%/' + 'dir' + worddir + '.gif'; //default
+                                        if (i == 0) {filename = '%scripturl%/' + image1}; //first endpoint
+                                        if (i == length - 1) {filename = '%scripturl%/' + image2}; //second endpoint
+                                        document.getElementById(celltomodify).innerHTML = oldtext + "<img class='pic' src='" + filename + "'>";
+                                        document.getElementById(celltomodify).className = 'box';
+                                        }
+}
+
+function getkeys(thearray)
+{
+  var keys = [];
+  for(var i in thearray) if (thearray.hasOwnProperty(i))
+  {
+    keys.push(i);
+  }
+  return keys;
+}
+
+</SCRIPT>
+
+
+<!--FB share below-->
+         <DIV ID="fb-root"></DIV> <SCRIPT>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=47755733258&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
+
+function getDomainName(hostName)
+{
+    return hostName.substring(hostName.lastIndexOf(".", hostName.lastIndexOf(".") - 1) + 1);
+}
+
+function vp()
+{
+var myurl = window.location.href;
+myurl = myurl.replace(/\#/g,''); //required to share via FB
+var tt = {
+    method: 'share',
+    href: "https://www.emogic.com/cgi/wordsearch/",
+  };
+tt.href = myurl;
+
+FB.ui(
+  tt ,
+  function(response) {
+    if (response && !response.error_code) {
+      alert('Posting completed.');
+    } else {
+      alert('Error while posting.');
+    }
+  }
+        );
+};
+</SCRIPT>
+
+<CENTER>
+<div class="fb-like" data-href="https://apps.facebook.com/emogicwordsearch/" data-layout="standard" data-action="like" data-show-faces="false" data-share="true"></div>
+<INPUT TYPE="BUTTON" NAME="Button1" VALUE="Share this Word Search on FB" ONCLICK="vp();">
+<INPUT TYPE="BUTTON" NAME="Button1" VALUE="Use App on FB" ONCLICK="window.open('https://apps.facebook.com/emogicwordsearch/','_blank');">
+</CENTER>
+
+<!--share end-->
+
+<P></P>
+
+	 <FORM> 
+		<DIV ALIGN="CENTER">
+		  <INPUT TYPE="BUTTON" NAME="Button9" VALUE="Instructons"
+		  ONCLICK="alert('1. Click on starting letter and last letter of found words to highlight them 2. Click on the word in the list to do a google search on that word and learn more about it')">&nbsp;<INPUT
+		  TYPE="BUTTON" NAME="Button7" VALUE="Toggle Puzzle"
+		  ONCLICK="toggle('Puzzle');">&nbsp;<INPUT TYPE="BUTTON" NAME="Button8"
+		  VALUE="Toggle Words" ONCLICK="toggle('Words');">&nbsp;<INPUT
+		  TYPE="BUTTON" NAME="Button4" VALUE="Toggle Answes"
+		  ONCLICK="toggle('Answers');"> &nbsp;<INPUT TYPE="BUTTON" NAME="Button5"
+		  VALUE="Print" ONCLICK="window.print()">&nbsp;<INPUT TYPE="BUTTON"
+		  NAME="Button6" VALUE="Save"
+		  ONCLICK="alert('To save this puzzle, and resume it later, add it to your favorites.')">&nbsp;<INPUT
+		  TYPE="BUTTON" NAME="Button3" VALUE="Reset Puzzle"
+		  ONCLICK="window.location.href='%filename%';">&nbsp;<INPUT TYPE="BUTTON"
+		  NAME="Button1" VALUE="New Puzzle"
+		  ONCLICK="if (confirm('Are you sure? This will clear this puzzle.')) { window.open( '/cgi/wordsearch/' , '_self' ) } else {return 0};">&nbsp;<INPUT
+		  TYPE="BUTTON" NAME="Button2" VALUE="Puzzle Archive"
+		  ONCLICK="if (confirm('Are you sure? This will clear this puzzle.')) { window.open( '%archiveurl%/' , '_self' ) } else {return 0};"></DIV></FORM>
+	 
+	 <P></P> 
+	 <DIV ID="Puzzle"><%puzzle%>
+	 </DIV> 
+	 <P></P> 
+	 <TABLE CELLPADDING="3" CELLSPACING="0" ALIGN="CENTER" ID="Words"> 
+		<TR> 
+		  <TD>Words:<HR> <%words%></TD> 
+		</TR> 
+	 </TABLE> 
+	 <DIV ID="Answers"><%answers%>
+	 </DIV> <SCRIPT>
+toggle('Answers');
+
+//fill in answer lines
+var keyss = getkeys(words);
+var length = keyss.length,
+    element = null;
+for (var i = 0; i < length; i++)
+        {
+  element = keyss[i];
+  HighlightWord(element , 'Answer');
+                }
+
+function getUrlVars()
+                {
+                    var vars = [], hash;
+                    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+                    for(var i = 0; i < hashes.length; i++)
+                    {
+                        hash = hashes[i].split('=');
+                        vars[hash[0]] = hash[1];
+                    }
+                    return vars;
+                }
+//restore saved words found from ?1=1_0_9_2&2=2_3_4_5 URL
+var url_vars = getUrlVars();
+for(var foundkey in url_vars)
+        {
+   //alert(foundkey + " == " + url_vars[foundkey]);
+        HighlightWord(foundkey , '')        ;
+   }
+
+</SCRIPT> 
+	 <DIV ALIGN="CENTER"><B> Script by:
+		<A HREF="http://www.emogic.com/scriptman/" TARGET="_blank"> Emogic</A></B><BR>
+		</DIV> </BODY>
+</HTML>

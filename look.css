@@ -1,0 +1,66 @@
+.puzzle
+{
+cursor: crosshair;
+
+//position: static;
+//position : relative; /*if used requires a width!*/
+
+border-spacing : 0pt;
+padding : 0pt;
+border-collapse : collapse;
+
+margin-left: auto;
+margin-right: auto ;
+}
+
+.row
+{
+//position : absolute; /*brings rows into line (IE and Chrome) OK if no top or left!*/
+//border : 1pt solid green;
+
+border-spacing : 0pt;
+padding : 0pt;
+border-collapse : collapse;
+}
+				
+.box ,  .box_selected 
+{
+position : relative; /*required for pic to be absolute and therefore pics to overlap*/
+//display : inline; /*not require as float fixes*/
+//float : left; /*fixes x,y size and also fixes vertical in div (IE and Chrome)*/
+text-align: center;
+
+width: 15pt;
+height: 15pt;
+border : 1pt solid black;
+
+border-spacing : 0pt;
+padding : 0pt;
+border-collapse : collapse;
+}
+
+ .box_selected
+{
+border-top: 1pt solid;
+border-right: 1pt solid;
+border-left: 1pt solid;
+border-bottom: 1pt solid;
+background-color : Silver;
+}
+
+.pic
+{
+//position : static;
+position : absolute;
+//position : relative;
+//display : inline;
+//top : -15pt;
+left : 0pt;
+height : 15pt;
+width : 15pt;
+}
+
+.wordselected
+{
+background-color : Silver;	
+}
