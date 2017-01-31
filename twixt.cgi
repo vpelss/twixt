@@ -39,7 +39,6 @@ sub main()
 my $command = $in{'command'};
 #cookies are read in check_login
 #set global values if possible
-$logged_in = &login(); #sets $username + password if any
 if ( $in{'game'} )
     { $game = $in{'game'} }
 else
@@ -54,15 +53,17 @@ else
     }
 
 if ( $command eq 'register' ) { &register(); }
-#if ( $command eq 'login' ) { &login(); }
 if ( $command eq 'reset_password' ) { &reset_password(); }
 if ( $command eq 'forgot_password' ) { &forgot_password(); }
 if ( $command eq 'forgot_username' ) { &forgot_username(); }
+$logged_in = &login(); #sets / gets $username + password if any
+if ( $command eq 'login' ) { &check_login() }
+if ( $logged_in != 1)
+    {#every command after this needs us to be logged in
+    &send_system_message("Fail: You need to login first.");
+    }
 if ( $command eq 'create_game' ) { &create_game(); }
-
-if ( $command eq 'login' ) { &check_login(); }
 if ( $command eq 'get_games' ) { &get_games(); }
-#if ( $command eq 'get_game_moves' ) { &return_game_moves(); }
 if ( $command eq 'update_board' ) { &update_board(); }
 if ( $command eq 'send_move' ) { &incomming_move(); }
 if ( $command eq 'send_chat' ) { &incomming_chat(); }
@@ -217,7 +218,7 @@ sub forgot_password()
          if ( &valid_email($email) )
                {
                my $mail_message = "$username Your new password is $new_password.";
-               my $result = &sendmail($SEND_MAIL, $SEND_MAIL, $email, $SMTP_SERVER, $SUBJECT_MAIL, $mail_message );
+               my $result = &sendmail($FROM_MAIL, $SEND_MAIL, $email , $SMTP_SERVER, 'Your new Twixt password', $mail_message );
                if ( $result == 1 )
                     {
                     &send_system_message("Password changed for <font color=red><b>$username</b></font> and sent to <font color=red><b>$email</b></font>.");
@@ -261,7 +262,7 @@ sub forgot_username()
                { #username found
                 #$usernames .= $username . ' ';
                my $mail_message = "Your username is $username";
-               my $result = &sendmail($SEND_MAIL, $SEND_MAIL, $email, $SMTP_SERVER, $SUBJECT_MAIL, $mail_message );
+               my $result = &sendmail($FROM_MAIL, $SEND_MAIL, $email, $SMTP_SERVER, 'Your Twixt username', $mail_message );
                if ( ! $result == 1 )
                     {
                     &send_system_message("Email error $result.");
@@ -284,10 +285,6 @@ sub create_game()
         {
           my $message;
         my $result;
-        if ( $logged_in != 1)
-                {
-                &send_system_message("Fail: You need to login first : $logged_in");
-                }
         my $username = $cookies{'username'}->value;
         my $public_private = $in{'public_private'};
         my $timestamp = time();
@@ -336,23 +333,17 @@ sub create_game()
 
 sub get_games()
     {
-    my $message;
-    my $output;
     #return a json object {public:[] , private[]}
-    if ( $logged_in != 1)
-        {
-        &send_system_message("You need to login first.");
-        }
-    my %games;
+     my %games;
     &get_games_list("$path_to_games/public" , \%games , 'public');
     &get_games_list("$path_to_games/$username" , \%games , 'private');
     #$games{'public'} = [@public_games];
     #$games{'private'} = [@private_games];
-    $output->{'pass'} = 1;
-    $output->{'games'} = { %games };
-    #%{ $output->{'games'} } = %games;
 
-    $message = $json->encode( $output );
+    my $game_hash_ref->{'pass'} = 0; #0=game data 1=system message 2=means no output
+    $game_hash_ref->{'games'} = { %games };
+
+    my $message = $json->encode( $game_hash_ref );
     send_output($message);
     }
 
@@ -424,11 +415,6 @@ sub update_board()
     my $move_string = $in{'move'};
     $move_string =~ s/[^_0-9]//g; #sanitize moves
     my $output;
-    if ( $logged_in != 1 )
-        {
-        &send_system_message( "Fail: You need to login first.");
-        }
-
     #get game data
     my $game_hash_ref = &read_game_data_string();
     my ( $x1 , $y1 , $x2 , $y2 ) = split ( /_/ , $in{'move'} );
@@ -546,7 +532,7 @@ close FILE;
 }
 
 sub login()
-{
+{#the only time we return is if we logged in and we do it silently as we use this every time script is run
 #return 1 on success and a text message on fail
 $username = $in{'username'};
 $username =~ s/\s\W//; #no white space, only alpha numeric
@@ -561,12 +547,12 @@ if ( $username eq '' and $password eq '')
         }
 if ( $username eq '' or $password eq '')
         {#form submit error
-        return 'Login credentials failed.';
+        return 0;
         }
 my $user_file = "$path_to_users/$username$user_file_extension";
 if ( ! -e $user_file  )
         {#file does not exist
-        return 'Login credentials failed or user does not exist.';
+        return 0;
         }
     else
           {
@@ -585,26 +571,24 @@ if ( ! -e $user_file  )
              print "Set-Cookie: $cookie_username\n";
              print "Set-Cookie: $cookie_password\n";
             #print "Content-type: text/html\n\n";
-           return 1;
+           return 1; #the only time we return is if we logged in and we do it silently as we use this every time script is run
             }
           else
-               {
-               return "Login failed.";
-               }
-
-          return 'Error: reason unknown';
+            {
+            return 0;
+            }
           }
 }
 
 sub check_login()
-{
+{#only to tell client if a first 'logon' was successful
 if($logged_in == 1)
   {
   &send_system_message('Logged in.');
   }
 else
   {
-  &send_system_message('Not logged in.');
+  &send_system_message('Login credentials failed or user does not exist.');
   }
 }
 
@@ -708,9 +692,8 @@ sub valid_email
    else { return 1; }
 }
 
-sub sendmail
-{
-# error codes below for those who bother to check result codes <gr>
+sub send_mail()
+{#error codes below for those who bother to check result codes <gr>
 # 1 success
 # -1 $smtphost unknown
 # -2 socket() failed

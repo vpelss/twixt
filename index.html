@@ -141,22 +141,20 @@ $( function() {
 
 <body>
 
-<div id='board'></div>
-
-<div id='game_number'></div>
-
-<div id='next_move'></div>
-
-<div id='message_div'>
-<form id='message_form'>
-<input name="command" type="hidden" value="send_chat" id='command_send_chat'>
-<input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
-<input type='submit' id='message_form_submit' onclick='return send_chat();'>
-</form>
-</div>
-
-<div id='chat_board_resizable' class="ui-widget-content">
-<pre id='chat_board' >Chat Board</pre>
+<div id='big_game'>
+  <div id='board'></div>
+  <div id='game_number'></div>
+  <div id='next_move'></div>
+  <div id='message_div'>
+  <form id='message_form'>
+  <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
+  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
+  <input type='submit' id='message_form_submit' onclick='return send_chat();'>
+  </form>
+  </div>
+  <div id='chat_board_resizable' class="ui-widget-content">
+  <pre id='chat_board' >Chat Board</pre>
+  </div>
 </div>
 
 <div id="dialog-message" title="Twixt"></div>
@@ -238,6 +236,10 @@ $( function() {
 <p></p>
 
 <script>
+$('#big_game').hide();
+
+var timer_id;
+
 //get url game requests!!!!
 if ( gup('game') !== '' && gup('public_private') !== '' )
   {
@@ -266,8 +268,14 @@ return res;
 function form_done(data)
 {
 $("#dialog-waiting" ).hide();
-$('#dialog-message').html(data);
-$('#dialog-message').dialog( "open" );
+var result =  JSON.parse( data );
+if (result.pass === 1)
+  {
+  $('#dialog-message').html( result.message );
+  $('#dialog-message').dialog( "open" );
+  return 0;
+  }
+
 }
 
 function form_call( form_id_string )
@@ -285,7 +293,7 @@ function get_games_done(data)
 $("#dialog-waiting" ).hide();
 var game_number;
 var result =  JSON.parse( data );
-if (result.pass === 0)
+if (result.pass === 1)
   {
   $('#dialog-message').html( result.message );
   $('#dialog-message').dialog( "open" );
@@ -337,8 +345,9 @@ Cookies.set('game', game);
 Cookies.set('public_private', public_private);
 //get_game_moves( game , public_private );
 //setInterval(function(){ get_chat(); }, 3000);
-setInterval( function(){update_board();} , 3000);
+timer_id = setInterval( function(){update_board();} , 3000);
 }
+
 function update_board_done(data)
 {
 $("#dialog-waiting" ).hide();
@@ -507,11 +516,15 @@ function logout()
 {
 if ( confirm('Are you sure?') == 1 )
     {
+    $('#big_game').hide();
+    clearInterval( timer_id );
     Cookies.remove('username');
     Cookies.remove('password');
     Cookies.remove('game');
+    Cookies.remove('public_private');
     $('#board').html("");
     $('#game_number').html("");
+    $('#chat_board').html("");
     $('#board').css('width' , '0px' );
     $('#board').css('height' , '0px' );
     form_done( 'You have been logged out' );
@@ -524,8 +537,8 @@ var three_x;
 var dot_width;
 function build_board()
 {
+$('#big_game').show();
 $('#list_games').html('');
-
 //fill board with pegs
 $('#board').html('');
 $('#board').append("<div CLASS='corner' id=0_0></div>");
