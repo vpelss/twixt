@@ -1,0 +1,1 @@
+{"move_count":1,"moves":{"9_19_10_17":{"move_owner":"a","move_count":1}},"game":"1485913973","user1":"a","points":{"10_17":"a","9_19":"a"},"number_of_users":1,"next_move":null}

@@ -83,7 +83,7 @@ open FILE , ">>$file";
 print FILE "$username: $chat_text\n";
 close FILE;
 
-my $game_hash_ref->{'pass'} = 2; #2 means no output to js screen
+my $game_hash_ref->{'pass'} = 10; #10 means no output to js screen
 my $message = $json->encode( $game_hash_ref );
 send_output($message);
 }
@@ -404,14 +404,13 @@ sub update_board()
 
     my $chat_text = &read_chat_text_string();
     $game_hash_ref->{'chat_text'} = $chat_text;
-    $game_hash_ref->{'pass'} = 1;
+    $game_hash_ref->{'pass'} = 2;
     $message = $json->encode( $game_hash_ref );
     &send_output($message);
     }
 
  sub incomming_move()
     {
-    my $message;
     my $move_string = $in{'move'};
     $move_string =~ s/[^_0-9]//g; #sanitize moves
     my $output;
@@ -481,8 +480,9 @@ sub update_board()
 
     &save_game_data_hash( $game_hash_ref );
     #send to client
-    $message = &get_game_moves();
-    &send_output($message);
+#$message = &get_game_moves();
+    $game_hash_ref->{'pass'} = 2;
+    &send_output($game_hash_ref);
     }
 
 sub read_chat_text_string()

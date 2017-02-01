@@ -236,9 +236,15 @@ $( function() {
 <p></p>
 
 <script>
-$('#big_game').hide();
-
 var timer_id;
+var next_move;
+var two_x;
+var three_x;
+var dot_width;
+var highlighted_peg;
+var legal1 , legal2 , legal3 , legal4 , legal5 , legal6 , legal7 , legal8;  //id points to erase later
+
+$('#big_game').hide();
 
 //get url game requests!!!!
 if ( gup('game') !== '' && gup('public_private') !== '' )
@@ -269,13 +275,25 @@ function form_done(data)
 {
 $("#dialog-waiting" ).hide();
 var result =  JSON.parse( data );
-if (result.pass === 1)
+if (result.pass === 1) //system message
   {
   $('#dialog-message').html( result.message );
   $('#dialog-message').dialog( "open" );
   return 0;
   }
-
+result =  JSON.parse( data );
+if ( result.pass == 2 ) //upadte game
+  { //user data comming
+      next_move = result.next_move;
+  var message = "Next move: " + next_move + "";
+  $('#next_move').html( message );
+  //place pegs received from data????
+  place_moves( result );
+  //place chat text
+  $('#chat_board').html( result.chat_text );
+  $('#chat_board').scrollTop( 10000 ); //scroll to bottom
+  //update_board();
+  }
 }
 
 function form_call( form_id_string )
@@ -343,34 +361,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-//get_game_moves( game , public_private );
-//setInterval(function(){ get_chat(); }, 3000);
-timer_id = setInterval( function(){update_board();} , 3000);
-}
-
-function update_board_done(data)
-{
-$("#dialog-waiting" ).hide();
-var result =  JSON.parse( data );
-if ( result.pass == 1 )
-  { //user data comming
-      next_move = result.next_move;
-  var message = "Next move: " + next_move + "";
-  $('#next_move').html( message );
-  //place pegs received from data????
-  place_moves( result );
-  //place chat text
-  $('#chat_board').html( result.chat_text );
-  $('#chat_board').scrollTop( 10000 ); //scroll to bottom
-  }
-else
-  { //fail
-  $('#dialog-message').html( result.message );
-  $('#dialog-message').dialog( "open" );
-  }
-
-//place pegs received from data????
-//place_moves( result );
+timer_id = setInterval( function(){update_board();} , 5000);
+//update_board();
 }
 
 function update_board()
@@ -378,7 +370,8 @@ function update_board()
 //$( "#dialog-waiting" ).show();
 var mydata = 'command=update_board';
 var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
-jqxhr.done( function(data) { update_board_done( data ); }  );
+//jqxhr.done( function(data) { update_board_done( data ); }  );
+jqxhr.done( function(data) { form_done( data ); }  );
 jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
 return false; //so form submit does not reset page and upset ajax
 }
@@ -481,37 +474,6 @@ $('.ene , .ese , .wnw , .esw').css('width' , three_x );
 $('.ene , .ese , .wnw , .esw').css('height' , two_x );
 }
 
-var next_move;
-function old_get_game_moves_done( data )
-{
-$("#dialog-waiting" ).hide();
-var result =  JSON.parse( data );
-if ( result.pass == 1 )
-  { //user data comming
-  next_move = result.next_move;
-  var message = "Next move: " + next_move + "";
-  $('#next_move').html( message );
-  //place pegs received from data????
-  place_moves( result );
-  }
-else
-  { //fail
-  $('#dialog-message').html( result.message );
-  $('#dialog-message').dialog( "open" );
-  }
-
-}
-
-function old_get_game_moves( game , public_private )
-{
-$( "#dialog-waiting" ).show();
-var mydata = 'command=get_game_moves' ;
-var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
-jqxhr.done( function(data) { get_game_moves_done( data ); }  );
-jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
-return false; //so form submit does not reset page and upset ajax
-}
-
 function logout()
 {
 if ( confirm('Are you sure?') == 1 )
@@ -532,9 +494,6 @@ if ( confirm('Are you sure?') == 1 )
 return false; //so form submit does not reset page and upset ajax
 }
 
-var two_x;
-var three_x;
-var dot_width;
 function build_board()
 {
 $('#big_game').show();
@@ -643,7 +602,6 @@ if ( id != highlighted_peg )
   }
 }
 
-var legal1 , legal2 , legal3 , legal4 , legal5 , legal6 , legal7 , legal8;  //id points to erase later
 function add_legal_moves( id )
 {
 var x1 , y1 , x2 , y2 , x , y , legal_move_id , top , left;
@@ -655,7 +613,7 @@ for(var offset in marker_array)
     {
     x = Number(x1) + marker_array[offset][0];
     y = Number(y1) + marker_array[offset][1];
-    legal_move_point = x.toString() + '_' + y.toString() ;
+    var legal_move_point = x.toString() + '_' + y.toString() ;
     legal_move_id = "#" + legal_move_point;
     if($(legal_move_id).length !== 0)
       {//we are on the board. then place.
@@ -677,7 +635,6 @@ $('.marker').css('width' , dot_width);
 $('.marker').css('height' , dot_width);
 }
 
-var highlighted_peg;
 function peg_clicked( id , which )
 {
 if (which == 3)
@@ -714,25 +671,12 @@ else
 	}
 }
 
-function send_moves_done( data )
-{
-$("#dialog-waiting" ).hide();
-var result =  JSON.parse( data );
-if ( result.pass != 1 )
-  {
-  $('#dialog-message').html(data);
-  $('#dialog-message').dialog( "open" );
-  return;
-  }
-update_board();
-}
-
 function send_moves( move )
 {
 $( "#dialog-waiting" ).show();
 var mydata = 'command=send_move' + '&move=' + move;
 var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
-jqxhr.done( function(data) { send_moves_done( data ); }  );
+jqxhr.done( function(data) { form_done( data ); }  );
 jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
 return false; //so form submit does not reset page and upset ajax
 }
