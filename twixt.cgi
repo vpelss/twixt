@@ -482,7 +482,8 @@ sub update_board()
     #send to client
 #$message = &get_game_moves();
     $game_hash_ref->{'pass'} = 3;
-    &send_output($game_hash_ref);
+    my $message = $json->encode( $game_hash_ref );
+    &send_output($message);
     }
 
 sub read_chat_text_string()

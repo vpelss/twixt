@@ -296,9 +296,9 @@ if (result.pass == 4) { get_games_done(result); }
 
 function form_call( form_id_string )
 {
-var skip_wait;
-if ( form_id_string != 'form_update_board') { skip_wait = 1; }
-if ( form_id_string != 'chat_form') { skip_wait = 1; }
+var skip_wait = 0;
+if ( form_id_string == 'form_update_board') { skip_wait = 1; }
+if ( form_id_string == 'chat_form') { skip_wait = 1; }
 if ( skip_wait === 0 )
   {
   $( "#dialog-waiting" ).show();
@@ -350,8 +350,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
-form_call("form_update_board");
+timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+//form_call("form_update_board");
 }
 
 function build_board()
