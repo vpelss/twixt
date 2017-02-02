@@ -146,7 +146,7 @@ $( function() {
   <div id='game_number'></div>
   <div id='next_move'></div>
   <div id='message_div'>
-  <form id='message_form'>
+  <form id='chat_form'>
   <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
   <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
   <input type='submit' id='message_form_submit' onclick='return send_chat();'>
@@ -160,12 +160,14 @@ $( function() {
 <div id="dialog-message" title="Twixt"></div>
 <div id="dialog-waiting"><img src='./images/flash.gif'></div>
 
-<script>$( "#dialog-waiting" ).hide();</script>
+<script>
+$( "#dialog-waiting" ).hide();
+</script>
 
 <div id="tabs">
 
 <ul>
-    <li><a href="#list_games" onclick='get_games();'>Games</a></li>
+    <li><a href="#list_games" onclick='form_call("form_get_games");'>Games</a></li>
     <li><a href="#form_create_game">Create Game</a></li>
     <li><a href="#form_login">Login</a></li>
     <li><a href="#form_logout">Logout</a></li>
@@ -233,7 +235,18 @@ $( function() {
 
 </div>
 
-<p></p>
+<div id='hidden_div'>
+<form id='form_get_games'>
+  <input name="command" type="hidden" value="get_games">
+</form>
+<form id='form_update_board'>
+  <input name="command" type="hidden" value="update_board">
+</form>
+<form id='form_send_move'>
+  <input name="command" type="hidden" value="send_move">
+  <input name="move" id='move' type="hidden">
+</form>
+</div>
 
 <script>
 var timer_id;
@@ -242,7 +255,6 @@ var two_x;
 var three_x;
 var dot_width;
 var highlighted_peg;
-var legal1 , legal2 , legal3 , legal4 , legal5 , legal6 , legal7 , legal8;  //id points to erase later
 
 $('#big_game').hide();
 
@@ -264,41 +276,33 @@ function gup( name )
     return results[1];
 }
 
-function send_chat()
-{
-var res = form_call("message_form");
-$('#chat_text').val('') ;
-return res;
-}
-
 function form_done(data)
 {
 $("#dialog-waiting" ).hide();
 var result =  JSON.parse( data );
-if (result.pass === 1) //system message
+
+//system message
+if (result.pass === 1) { system_message(result); }
+//upadte game output
+if ( result.pass == 2 ) { update_board_done(result); }
+//send move successful  action?
+if ( result.pass == 3 )
   {
-  $('#dialog-message').html( result.message );
-  $('#dialog-message').dialog( "open" );
-  return 0;
+  var u = 9;
   }
-result =  JSON.parse( data );
-if ( result.pass == 2 ) //upadte game
-  { //user data comming
-      next_move = result.next_move;
-  var message = "Next move: " + next_move + "";
-  $('#next_move').html( message );
-  //place pegs received from data????
-  place_moves( result );
-  //place chat text
-  $('#chat_board').html( result.chat_text );
-  $('#chat_board').scrollTop( 10000 ); //scroll to bottom
-  //update_board();
-  }
+//get games output results
+if (result.pass == 4) { get_games_done(result); }
 }
 
 function form_call( form_id_string )
 {
-$( "#dialog-waiting" ).show();
+var skip_wait;
+if ( form_id_string != 'form_update_board') { skip_wait = 1; }
+if ( form_id_string != 'chat_form') { skip_wait = 1; }
+if ( skip_wait === 0 )
+  {
+  $( "#dialog-waiting" ).show();
+  }
 var mydata = $( '#' + form_id_string ).serialize();
 var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
 jqxhr.done( function(data) { form_done( data ); }  );
@@ -306,26 +310,21 @@ jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.resp
 return false; //so form submit does not reset page and upset ajax
 }
 
-function get_games_done(data)
+function system_message(result)
+{
+$('#dialog-message').html( result.message );
+$('#dialog-message').dialog( "open" );
+return 0;
+}
+
+function get_games_done(result)
 {
 $("#dialog-waiting" ).hide();
 var game_number;
-var result =  JSON.parse( data );
-if (result.pass === 1)
-  {
-  $('#dialog-message').html( result.message );
-  $('#dialog-message').dialog( "open" );
-  return 0;
-  }
 var username = Cookies.get('username');
 var html = 'Public</br>';
-//my_array = result.games.public;
-//my_array.foreach( function(game_number) { html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ') </a></br>';
-// } );
 var pathArray = location.href.split( '?' );
 var url = pathArray[0];
-//var url = window.location.href;
-//var url = window.location.host;
 var url_link ;
 
 for(game_number in result.games.public)
@@ -340,18 +339,8 @@ for(game_number in result.games.private)
     {
     url_link = url + "?game=" + game_number + "&public_private=" + username;
     html += '<a href=# onclick=get_game("' + game_number + '","' + username + '");return(0); >' + game_number + ' (' + result.games.private[game_number].user1 + ' , ' + result.games.private[game_number].user2 + ') </a>' + " " + url_link + '</br>' ;
-     }
+    }
 $( '#list_games' ).html( html );
-}
-
-function get_games( )
-{
-$( "#dialog-waiting" ).show();
-var mydata = 'command=get_games';
-var jqxhr = $.post( "./twixt.cgi", mydata , 'json');
-jqxhr.done( function(data) { get_games_done( data ); }  );
-jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
-return false; //so form submit does not reset page and upset ajax
 }
 
 function get_game( game , public_private )
@@ -361,19 +350,96 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-timer_id = setInterval( function(){update_board();} , 5000);
-//update_board();
+//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+form_call("form_update_board");
 }
 
-function update_board()
+function build_board()
 {
-//$( "#dialog-waiting" ).show();
-var mydata = 'command=update_board';
-var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
-//jqxhr.done( function(data) { update_board_done( data ); }  );
-jqxhr.done( function(data) { form_done( data ); }  );
-jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
-return false; //so form submit does not reset page and upset ajax
+$('#big_game').show();
+$('#list_games').html('');
+//fill board with pegs
+$('#board').html('');
+$('#board').append("<div CLASS='corner' id=0_0></div>");
+for (x=1 ; x<23 ; x++)
+	{
+	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
+	}
+$('#board').append("<div CLASS='corner' id=23_0></div>");
+for (y=1 ; y<23 ; y++)
+	{
+	for (x=0 ; x<24 ; x++)
+		{
+		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
+		}
+	}
+$('#board').append("<div CLASS='corner' id=0_23></div>");
+for (x=1 ; x<23 ; x++)
+	{
+	$('#board').append("<div CLASS='dot' id=" + x + "_23></div>");
+	}
+$('#board').append("<div CLASS='corner' id=23_23></div>");
+
+//set line class for edges of board
+$( ".dot[id*='_0'" ).addClass('top_line');
+$( ".dot[id*='_23'" ).addClass('bottom_line');
+$( ".dot[id^='0'" ).addClass('left_line');
+$( ".dot[id^='23'" ).addClass('right_line');
+
+//size board
+var board_width = 400;
+dot_width = (board_width / 24);
+two_x = dot_width * 2;
+three_x = dot_width * 3;
+
+//set board size
+$('#board').css('width' , board_width  + 'px' );
+$('#board').css('height' , board_width  + 'px' );
+//set dot sizes
+$('.dot , .corner').css('width' , dot_width +'px' );
+$('.dot , .corner').css('height' , dot_width + 'px' );
+$('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
+
+//div to add moves
+$('#board').append("<div id='moves'></div>");
+
+//div to add legal move markers
+$('#board').append("<div id='markers'></div>");
+
+$( ".dot" ).on("contextmenu",function(){
+     return false;
+   });
+
+$( ".dot" ).mousedown( function( event )
+		{
+    peg_clicked( this.id , event.which );
+		}
+	);
+
+$( ".dot" ).on( "mouseenter", function()
+		{
+		//peg_enter( this.id );
+		}
+	);
+
+$( ".dot" ).on( "mouseleave", function()
+		{
+		//peg_leave( this.id );
+		}
+	);
+}
+
+function update_board_done( result )
+{
+//user data comming
+next_move = result.next_move;
+var message = "Next move: " + next_move + "";
+$('#next_move').html( message );
+//place pegs received from data????
+place_moves( result );
+//place chat text
+$('#chat_board').html( result.chat_text );
+$('#chat_board').scrollTop( 10000 ); //scroll to bottom
 }
 
 function place_moves( result )
@@ -474,132 +540,42 @@ $('.ene , .ese , .wnw , .esw').css('width' , three_x );
 $('.ene , .ese , .wnw , .esw').css('height' , two_x );
 }
 
-function logout()
+function peg_clicked( id , which )
 {
-if ( confirm('Are you sure?') == 1 )
-    {
-    $('#big_game').hide();
-    clearInterval( timer_id );
-    Cookies.remove('username');
-    Cookies.remove('password');
-    Cookies.remove('game');
-    Cookies.remove('public_private');
-    $('#board').html("");
-    $('#game_number').html("");
-    $('#chat_board').html("");
-    $('#board').css('width' , '0px' );
-    $('#board').css('height' , '0px' );
-    form_done( 'You have been logged out' );
-    }
-return false; //so form submit does not reset page and upset ajax
-}
-
-function build_board()
-{
-$('#big_game').show();
-$('#list_games').html('');
-//fill board with pegs
-$('#board').html('');
-$('#board').append("<div CLASS='corner' id=0_0></div>");
-for (x=1 ; x<23 ; x++)
-	{
-	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
-	}
-$('#board').append("<div CLASS='corner' id=23_0></div>");
-for (y=1 ; y<23 ; y++)
-	{
-	for (x=0 ; x<24 ; x++)
-		{
-		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
-		}
-	}
-$('#board').append("<div CLASS='corner' id=0_23></div>");
-for (x=1 ; x<23 ; x++)
-	{
-	$('#board').append("<div CLASS='dot' id=" + x + "_23></div>");
-	}
-$('#board').append("<div CLASS='corner' id=23_23></div>");
-
-//set line class for edges of board
-$( ".dot[id*='_0'" ).addClass('top_line');
-$( ".dot[id*='_23'" ).addClass('bottom_line');
-$( ".dot[id^='0'" ).addClass('left_line');
-$( ".dot[id^='23'" ).addClass('right_line');
-
-//size board
-var board_width = 400;
-dot_width = (board_width / 24);
-two_x = dot_width * 2;
-three_x = dot_width * 3;
-
-//set board size
-$('#board').css('width' , board_width  + 'px' );
-$('#board').css('height' , board_width  + 'px' );
-//set dot sizes
-$('.dot , .corner').css('width' , dot_width +'px' );
-$('.dot , .corner').css('height' , dot_width + 'px' );
-$('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
-
-//div to add moves
-$('#board').append("<div id='moves'></div>");
-
-//div to add legal move markers
-$('#board').append("<div id='markers'></div>");
-
-$( ".dot" ).on("contextmenu",function(){
-     return false;
-   });
-
-$( ".dot" ).mousedown( function( event )
-		{
-    peg_clicked( this.id , event.which );
-		}
-	);
-
-$( ".dot" ).on( "mouseenter", function()
-		{
-		//peg_enter( this.id );
-		}
-	);
-
-$( ".dot" ).on( "mouseleave", function()
-		{
-		//peg_leave( this.id );
-		}
-	);
-
-
-}
-
-function get_h_squared( p1 , p2 )
-{
-var x1 , y1 , x2 , y2;
-[ x1 , y1 , x2 , y2 ]= p1.split( '_' ) ;
-var x1h , y1h , x2h , y2h;
-[ x1h , y1h , x2h , y2h ]= p2.split( '_' ) ;
-var delta_x = Math.abs(x1-x1h);
-var delta_y = Math.abs(y1-y1h);
-var h_squared = (delta_x * delta_x) + (delta_y * delta_y);
-return h_squared;
-}
-
-function peg_enter( id )
-{
-//if ( highlighted_peg === undefined)
-//  { return; }
-//var h_squared = get_h_squared( id , highlighted_peg );
-//if ( h_squared == 5 )
-//  {
-//  $( '#' + id ).css('background-color' , 'green' );
-//  }
-}
-
-function peg_leave( id )
-{
-if ( id != highlighted_peg )
-  {
-  $( '#' + id ).css('background-color' , '' );
+if (which == 3)
+  {//left click remove red start move
+  $('#' + highlighted_peg).css('background-color' , '');
+  highlighted_peg = undefined;
+  $('#markers').html(''); //delete markers
+  return;
   }
+if ( next_move != Cookies.get('username') )
+  {//local move block
+  //$('#dialog-message').html('It is not your move yet.');
+  //$('#dialog-message').dialog( "open" );
+  //return 0;
+  }
+if (highlighted_peg === undefined)
+	{
+	//mark peg
+	$('#' + id).css('background-color' , 'red');
+	highlighted_peg = id;
+  add_legal_moves( id );
+	}
+else
+	{
+  if( id.indexOf("marker_") === -1 ) {return;} //fail. illegal move
+  //remove 'marker_' string
+  id = id.replace('marker_', '');
+	//send move
+  $('#move').val( highlighted_peg + '_' + id ); //set move value in form_send_moves
+  form_call( 'form_send_move' ); //send it
+	//send_moves( highlighted_peg + '_' + id );
+  //clear old peg
+	$('#' + highlighted_peg).css('background-color' , '');
+  highlighted_peg = undefined;
+  $('#markers').html(''); //delete markers
+	}
 }
 
 function add_legal_moves( id )
@@ -635,49 +611,30 @@ $('.marker').css('width' , dot_width);
 $('.marker').css('height' , dot_width);
 }
 
-function peg_clicked( id , which )
+function send_chat()
 {
-if (which == 3)
-  {//left click remove red start move
-  $('#' + highlighted_peg).css('background-color' , '');
-  highlighted_peg = undefined;
-  $('#markers').html(''); //delete markers
-  return;
-  }
-if ( next_move != Cookies.get('username') )
-  {//local move block
-  //$('#dialog-message').html('It is not your move yet.');
-  //$('#dialog-message').dialog( "open" );
-  //return 0;
-  }
-if (highlighted_peg === undefined)
-	{
-	//mark peg
-	$('#' + id).css('background-color' , 'red');
-	highlighted_peg = id;
-  add_legal_moves( id );
-	}
-else
-	{
-  if( id.indexOf("marker_") === -1 ) {return;} //fail. illegal move
-  //remove 'marker_' string
-  id = id.replace('marker_', '');
-	//send move
-	send_moves( highlighted_peg + '_' + id );
-  //clear old peg
-	$('#' + highlighted_peg).css('background-color' , '');
-  highlighted_peg = undefined;
-  $('#markers').html(''); //delete markers
-	}
+var res = form_call("chat_form");
+$('#chat_text').val('') ;
+return res;
 }
 
-function send_moves( move )
+function logout()
 {
-$( "#dialog-waiting" ).show();
-var mydata = 'command=send_move' + '&move=' + move;
-var jqxhr = $.post( "./twixt.cgi", mydata , 'html');
-jqxhr.done( function(data) { form_done( data ); }  );
-jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.responseText + '\r' + errorThrown + ':' + textStatus); });
+if ( confirm('Are you sure?') == 1 )
+    {
+    $('#big_game').hide();
+    clearInterval( timer_id );
+    Cookies.remove('username');
+    Cookies.remove('password');
+    Cookies.remove('game');
+    Cookies.remove('public_private');
+    $('#board').html("");
+    $('#game_number').html("");
+    $('#chat_board').html("");
+    $('#board').css('width' , '0px' );
+    $('#board').css('height' , '0px' );
+    form_done( 'You have been logged out' );
+    }
 return false; //so form submit does not reset page and upset ajax
 }
 

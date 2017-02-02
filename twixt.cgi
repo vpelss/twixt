@@ -340,7 +340,7 @@ sub get_games()
     #$games{'public'} = [@public_games];
     #$games{'private'} = [@private_games];
 
-    my $game_hash_ref->{'pass'} = 0; #0=game data 1=system message 2=means no output
+    my $game_hash_ref->{'pass'} = 4; #4 games list
     $game_hash_ref->{'games'} = { %games };
 
     my $message = $json->encode( $game_hash_ref );
@@ -481,7 +481,7 @@ sub update_board()
     &save_game_data_hash( $game_hash_ref );
     #send to client
 #$message = &get_game_moves();
-    $game_hash_ref->{'pass'} = 2;
+    $game_hash_ref->{'pass'} = 3;
     &send_output($game_hash_ref);
     }
 
