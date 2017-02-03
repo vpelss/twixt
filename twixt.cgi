@@ -413,17 +413,26 @@ sub update_board()
     {
     my $move_string = $in{'move'};
     $move_string =~ s/[^_0-9]//g; #sanitize moves
-    my $output;
+    my ( $x1 , $y1 , $x2 , $y2 ) = split ( /_/ ,  $move_string );
+
+    #normalize input move. The point with the lowest x value goes first.
+    #required for checking existing moves. otherwise going the other way fails and duplicates move
+    #also helps with halving images and divs from 8 to 4. Only use East side
+    if ( $x2 < $x1 )
+      {# $x2 is less than $x1 so swap and fix $move_string
+      $move_string = "$x2\_$y2\_$x1\_$y1";
+      ( $x1 , $y1 , $x2 , $y2 ) = split ( /_/ ,  $move_string );
+      }
+
     #get game data
     my $game_hash_ref = &read_game_data_string();
-    my ( $x1 , $y1 , $x2 , $y2 ) = split ( /_/ , $in{'move'} );
 
     #see if this is our game?
     if ( ( $game_hash_ref->{'user1'} ne $username ) and ( $game_hash_ref->{'user2'} ne $username ) )
         {
         &send_system_message( "You are not a player in this game.");
         }
-    if ( exists  $game_hash_ref->{'moves'}->{ $in{'move'} } )
+    if ( exists  $game_hash_ref->{'moves'}->{ $move_string } )
         {#existing move
         &send_system_message( "Move already exists." );
         }
@@ -431,7 +440,7 @@ sub update_board()
       {
       if ( $game_hash_ref->{'points'}->{ "$x1\_$y1" } ne $game_hash_ref->{'next_move'} )
         {
-         &send_system_message( "One of the pegs belongs to the opponent" );
+        &send_system_message( "One of the pegs belongs to the opponent" );
         }
       }
     if ( exists $game_hash_ref->{'points'}->{ "$x2\_$y2" } )
@@ -448,6 +457,28 @@ sub update_board()
         {#block any move that is not delta 1 and delta 2
          &send_system_message( "Move can only be delta 1 and delta 2" );
         }
+    #does the move cross any existing moves
+    my $it_crosses = 0;
+    foreach my $move ( keys  %{ $game_hash_ref->{'moves'} } )
+      {#compare move with each other move
+      my ($X1,$Y1,$X2,$Y2) = split ('_' , $move);
+      my $m = ($y1 - $y2) / ($x1 - $x2);
+      my $M = ($Y1 - $Y2) / ($X1 - $X2);
+      if ($M == $m) {next();}
+      my $b = $y1;
+      my $B = $Y1;
+      my $x = ($b-$B)/($M-$m);
+      my $y = ($m * $x) + $b;
+      #is $x between $x1 and $X1?
+      if (0) {}
+
+
+
+      }
+    if ($it_crosses == 1)
+      {
+      &send_system_message( "Move crosses another move." );
+      }
 =pod
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet

@@ -289,6 +289,7 @@ if ( result.pass == 2 ) { update_board_done(result); }
 if ( result.pass == 3 )
   {
   var u = 9;
+  update_board_done(result);
   }
 //get games output results
 if (result.pass == 4) { get_games_done(result); }
@@ -350,8 +351,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
-//form_call("form_update_board");
+//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+form_call("form_update_board");
 }
 
 function build_board()
@@ -366,12 +367,14 @@ for (x=1 ; x<23 ; x++)
 	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
 	}
 $('#board').append("<div CLASS='corner' id=23_0></div>");
+//$('#board').append('</br>');
 for (y=1 ; y<23 ; y++)
 	{
 	for (x=0 ; x<24 ; x++)
 		{
 		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
 		}
+  //$('#board').append('</br>');
 	}
 $('#board').append("<div CLASS='corner' id=0_23></div>");
 for (x=1 ; x<23 ; x++)
@@ -389,6 +392,7 @@ $( ".dot[id^='23'" ).addClass('right_line');
 //size board
 var board_width = 400;
 dot_width = (board_width / 24);
+//dot_width = Math.floor(board_width / 24);
 two_x = dot_width * 2;
 three_x = dot_width * 3;
 
