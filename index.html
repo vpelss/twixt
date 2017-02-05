@@ -135,6 +135,31 @@ $( function() {
     $( "#chat_board_resizable" ).resizable();
   } );
 
+$( function() {
+	$( "#resize_spinner" ).spinner();
+  });
+
+$( document ).ready(function() {
+  // Handler for .ready() called.
+  //$( "#resize_spinner" ).on( "change", function( event, ui ) { build_board(); } );
+  var board_width;
+  if ( $(window).width() < $(window).height() )
+    {
+    board_width = Math.round ( $(window).width() * 0.9 ) ;
+    }
+  else
+    {
+    board_width = Math.round ( $(window).height() * 0.9 ) ;
+    }
+  $( "#resize_spinner" ).spinner( "value", board_width );
+  //after value change!!!!!!!!
+  $( "#resize_spinner" ).on( "spin", function(  ) { build_board(); } );
+  $( "#resize_spinner" ).on( "change", function(  ) {build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
+  $( "#resize_spinner" ).on( "focusout", function(  ) {build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
+
+  });
+
+
 </script>
 
 </head>
@@ -145,6 +170,8 @@ $( function() {
   <div id='board'></div>
   <div id='game_number'></div>
   <div id='next_move'></div>
+  <div id='resize'><label for="resize_spinner">Select a value:</label>
+  <input id="resize_spinner" name="resize_spinner"></div>
   <div id='message_div'>
   <form id='chat_form'>
   <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
@@ -350,8 +377,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
-//form_call("form_update_board");
+//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+form_call("form_update_board");
 }
 
 function build_board()
@@ -389,19 +416,7 @@ $( ".dot[id^='0'" ).addClass('left_line');
 $( ".dot[id^='23'" ).addClass('right_line');
 
 //size board
-var board_width = 400;
-dot_width = (board_width / 24);
-//dot_width = Math.floor(board_width / 24);
-two_x = dot_width * 2;
-three_x = dot_width * 3;
-
-//set board size
-$('#board').css('width' , board_width  + 'px' );
-$('#board').css('height' , board_width  + 'px' );
-//set dot sizes
-$('.dot , .corner').css('width' , dot_width +'px' );
-$('.dot , .corner').css('height' , dot_width + 'px' );
-$('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
+resize_board();
 
 //div to add moves
 $('#board').append("<div id='moves'></div>");
@@ -432,6 +447,24 @@ $( ".dot" ).on( "mouseleave", function()
 	);
 }
 
+function resize_board()
+{
+var board_width = $( "#resize_spinner" ).spinner( "value");
+dot_width = (board_width / 24);
+//dot_width = Math.floor(board_width / 24);
+two_x = dot_width * 2;
+three_x = dot_width * 3;
+
+//set board size
+$('#board').css('width' , board_width  + 'px' );
+$('#board').css('height' , board_width  + 'px' );
+//set dot sizes
+$('.dot , .corner').css('width' , dot_width +'px' );
+$('.dot , .corner').css('height' , dot_width + 'px' );
+$('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
+
+}
+
 function update_board_done( result )
 {
 //user data comming
@@ -456,7 +489,12 @@ var x1 , y1 , x2 , y2;
 for (var move in moves)
   if ( moves.hasOwnProperty(move) )
     {
-    [ x1 , y1 , x2 , y2 ]= move.split( '_' ) ;
+    var the_array = move.split( '_' ) ;
+    x1 = the_array[0];
+    y1 = the_array[1];
+    x2 = the_array[2];
+    y2 = the_array[3];
+    //[ x1 , y1 , x2 , y2 ]= move.split( '_' ) ;
 
     var dx = x1 - x2;
     var dy = y1 - y2;
@@ -584,7 +622,10 @@ else
 function add_legal_moves( id )
 {
 var x1 , y1 , x2 , y2 , x , y , legal_move_id , top , left;
-[ x1 , y1 ]= id.split( '_' ) ;
+var the_array = id.split( '_' ) ;
+x1 = the_array[0];
+y1 = the_array[1];
+//[ x1 , y1 ]= id.split( '_' ) ;
 
 var marker_array = [[1,-2] , [2,-1] , [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2]];
 
