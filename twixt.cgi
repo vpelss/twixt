@@ -414,7 +414,6 @@ sub update_board()
     my $move_string = $in{'move'};
     $move_string =~ s/[^_0-9]//g; #sanitize moves
     my ( $x1 , $y1 , $x2 , $y2 ) = split ( /_/ ,  $move_string );
-
     #normalize input move. The point with the lowest x value goes first.
     #required for checking existing moves. otherwise going the other way fails and duplicates move
     #also helps with halving images and divs from 8 to 4. Only use East side
@@ -457,6 +456,7 @@ sub update_board()
         {#block any move that is not delta 1 and delta 2
          &send_system_message( "Move can only be delta 1 and delta 2" );
         }
+=pod
     #does the move cross any existing moves
     my $it_crosses = 0;
     foreach my $move ( keys  %{ $game_hash_ref->{'moves'} } )
@@ -471,14 +471,12 @@ sub update_board()
       my $y = ($m * $x) + $b;
       #is $x between $x1 and $X1?
       if (0) {}
-
-
-
       }
     if ($it_crosses == 1)
       {
       &send_system_message( "Move crosses another move." );
       }
+=cut
 =pod
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet
@@ -488,6 +486,35 @@ sub update_board()
        &send_system_message( "Not your move dude." );
         }
 =cut
+    #check if we are crossing a move
+    if ( exists $game_hash_ref->{'illegal_moves'}->{ $move_string } )
+      {
+      &send_system_message('This move crosses another move');
+      }
+
+    #set $illegal_moves{x1_y1_x2_y2} = 1 after placing a move
+    #$illegal_moves_offsets{slope} = @( (9 arrays of offset from p1 x1_y1_x2_y2) , ()        )
+    my %illegal_moves_offsets;
+    my $dx = $x1 - $x2;
+    my $dy = $y1 - $y2;
+    my $marker = "0_0_$dx\_$dy";
+    #nne
+    $illegal_moves_offsets{'0_0_-1_2'} = [ '-1_-1_1_0' , '0_-1_2_0' , '-1_-2_1_-1' , '0_-2_2_-1' , '-1_0_1_-1' , '0_-1_2_-2' , '0_-1_1_1' , '0_-2_1_0' , '0_-3_1_-1' ];
+    #ene
+    $illegal_moves_offsets{'0_0_-2_1'} = ['-1_-1_1_0','0_-1_2_0','1_-1_3_0','0_-1_1_1','0_-2_1_0','1_-1_2_1','1_-2_2_0','0_1_1_-1','1_0_2_-2'];
+    #ese
+    $illegal_moves_offsets{'0_0_-2_-1'} = ['-1_1_1_0','0_1_2_0','1_1_3_0','0_1_1_-1','0_2_1_0','1_1_2_-1','2_0_1_2','0_-1_1_1','1_0_2_2'];
+    #sse
+    $illegal_moves_offsets{'0_0_-1_-2'} = ['-1_0_1_1','0_1_2_2','-1_1_1_0','0_1_2_0','-1_2_1_1','0_2_2_1','0_1_1_-1','0_2_1_0','0_3_1_1'];
+    foreach my $offset ( @{ $illegal_moves_offsets{$marker} } )
+      {
+      my ($offset_x1,$offset_y1,$offset_x2,$offset_y2) = split '_' , $offset;
+      my $new_x1 = $x1 + $offset_x1;
+      my $new_y1 = $y1 + $offset_y1;
+      my $new_x2 = $x1 + $offset_x2;
+      my $new_y2 = $y1 + $offset_y2;
+      $game_hash_ref->{'illegal_moves'}->{"$new_x1\_$new_y1\_$new_x2\_$new_y2"} = 1;
+      }
 
     #add move to move list and return new move list &get_game_moves()
     #increase move count
@@ -511,7 +538,6 @@ sub update_board()
 
     &save_game_data_hash( $game_hash_ref );
     #send to client
-#$message = &get_game_moves();
     $game_hash_ref->{'pass'} = 3;
     my $message = $json->encode( $game_hash_ref );
     &send_output($message);

@@ -44,7 +44,7 @@ background-color: yellow;
 background-color: green;
 }
 
-.nne , .ene , .ese , .sse , .ssw , .esw , .wnw , .nnw
+.nne , .ene , .ese , .sse /*, .ssw , .esw , .wnw , .nnw */
 {
 position:absolute;
 z-index: -1;
@@ -288,7 +288,6 @@ if ( result.pass == 2 ) { update_board_done(result); }
 //send move successful  action?
 if ( result.pass == 3 )
   {
-  var u = 9;
   update_board_done(result);
   }
 //get games output results
@@ -465,56 +464,56 @@ for (var move in moves)
     var y_offset;
     var class_to_use;
 
+    //if ( ( dx == -1 ) && ( dy == -2 ) )
+      //{//nnw from point 1
+      //x_offset = 0;
+      //y_offset = 0;
+      //class_to_use = 'nnw';
+      //}
     if ( ( dx == -1 ) && ( dy == -2 ) )
-      {//nnw from point 1
+      {//sse from point 1
       x_offset = 0;
       y_offset = 0;
-      class_to_use = 'nnw';
-      }
-    if ( ( dx == 1 ) && ( dy == 2 ) )
-      {//sse from point 1
-      x_offset = -1;
-      y_offset = -2;
       class_to_use = 'sse';
       }
 
+    //if ( ( dx == -1 ) && ( dy == 2 ) )
+      //{//nne from point 1
+      //x_offset = 0;
+      //y_offset = -2;
+      //class_to_use = 'nne';
+      //}
     if ( ( dx == -1 ) && ( dy == 2 ) )
-      {//nne from point 1
+      {//ssw from point 1
       x_offset = 0;
       y_offset = -2;
       class_to_use = 'nne';
       }
-    if ( ( dx == 1 ) && ( dy == -2 ) )
-      {//ssw from point 1
-      x_offset = -1;
-      y_offset = 0;
-      class_to_use = 'ssw';
-      }
 
+    //if ( ( dx == -2 ) && ( dy == 1 ) )
+      //{//ene from point 1
+      //x_offset = 0;
+      //y_offset = -1;
+      //class_to_use = 'ene';
+      //}
     if ( ( dx == -2 ) && ( dy == 1 ) )
-      {//ene from point 1
+      {//esw from point 1
       x_offset = 0;
       y_offset = -1;
       class_to_use = 'ene';
       }
-    if ( ( dx == 2 ) && ( dy == -1 ) )
-      {//esw from point 1
-      x_offset = -2;
-      y_offset = 0;
-      class_to_use = 'esw';
-      }
 
+   // if ( ( dx == -2 ) && ( dy == -1 ) )
+      //{//ese from point 1
+      //x_offset = 0;
+      //y_offset = 0;
+      //class_to_use = 'ese';
+      //}
     if ( ( dx == -2 ) && ( dy == -1 ) )
-      {//ese from point 1
+      {//wnw from point 1
       x_offset = 0;
       y_offset = 0;
       class_to_use = 'ese';
-      }
-    if ( ( dx == 2 ) && ( dy == 1 ) )
-      {//wnw from point 1
-      x_offset = -2;
-      y_offset = -1;
-      class_to_use = 'wnw';
       }
 
     //place moves
@@ -536,12 +535,12 @@ for (var move in moves)
     }
 
 //set sizes of ALL line / move classes
-$('.sse , .nne , .nnw , .ssw').css('background-size' , two_x + 'px ' + three_x + 'px');
-$('.sse , .nne , .nnw , .ssw').css('width' , two_x );
-$('.sse , .nne , .nnw , .ssw').css('height' , three_x );
-$('.ene , .ese , .wnw , .esw').css('background-size' , three_x + 'px ' + two_x + 'px');
-$('.ene , .ese , .wnw , .esw').css('width' , three_x );
-$('.ene , .ese , .wnw , .esw').css('height' , two_x );
+$('.sse , .nne').css('background-size' , two_x + 'px ' + three_x + 'px');
+$('.sse , .nne').css('width' , two_x );
+$('.sse , .nne').css('height' , three_x );
+$('.ene , .ese').css('background-size' , three_x + 'px ' + two_x + 'px');
+$('.ene , .ese').css('width' , three_x );
+$('.ene , .ese').css('height' , two_x );
 }
 
 function peg_clicked( id , which )
