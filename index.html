@@ -350,8 +350,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
-form_call("form_update_board");
+timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+//form_call("form_update_board");
 }
 
 function build_board()
