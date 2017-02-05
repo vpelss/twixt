@@ -170,7 +170,7 @@ $( document ).ready(function() {
   <div id='board'></div>
   <div id='game_number'></div>
   <div id='next_move'></div>
-  <div id='resize'><label for="resize_spinner">Select a value:</label>
+  <div id='resize'><label for="resize_spinner">Board Width:</label>
   <input id="resize_spinner" name="resize_spinner"></div>
   <div id='message_div'>
   <form id='chat_form'>
@@ -379,6 +379,7 @@ Cookies.set('game', game);
 Cookies.set('public_private', public_private);
 //timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
 form_call("form_update_board");
+highlighted_peg = undefined; //required for board resizing. else first click is not visible?
 }
 
 function build_board()
