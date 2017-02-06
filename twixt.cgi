@@ -34,7 +34,6 @@ exit;   # There are only two exit calls in the script, here and in in &cgierr.
 sub main()
 {
 #my $ttt = $ENV{'Authorization'};
-
 %in = &parse_form();
 my $command = $in{'command'};
 #cookies are read in check_login
@@ -73,10 +72,8 @@ if ( $command eq 'send_chat' ) { &incomming_chat(); }
 
 sub incomming_chat()
 {
-#$message .=  "Working on code";
-#create message file
 my $chat_text = $in{'chat_text'};
-$chat_text =~ s/[^\d\w\s]//g;
+$chat_text =~ s/[^\d\w\s]//g; #sanitize
 my $dir = "$path_to_games/$public_private/$game";
 my $file = "$dir/$chat_filename$chat_extension";
 open FILE , ">>$file";
@@ -283,7 +280,7 @@ sub forgot_username()
 
 sub create_game()
         {
-          my $message;
+        my $message;
         my $result;
         my $username = $cookies{'username'}->value;
         my $public_private = $in{'public_private'};
@@ -337,8 +334,6 @@ sub get_games()
      my %games;
     &get_games_list("$path_to_games/public" , \%games , 'public');
     &get_games_list("$path_to_games/$username" , \%games , 'private');
-    #$games{'public'} = [@public_games];
-    #$games{'private'} = [@private_games];
 
     my $game_hash_ref->{'pass'} = 4; #4 games list
     $game_hash_ref->{'games'} = { %games };
@@ -383,7 +378,7 @@ sub update_board()
     my $message;
     #get : next move username , all moves array , put in JSON and send
     #get game data
-    my $game_hash_ref =  &read_game_data_string();
+    my $game_hash_ref =  &read_game_data_hash();
 
     #check to see if you are in user list
     #if yes, continue if no, and one user add user to game and continue
@@ -424,7 +419,7 @@ sub update_board()
       }
 
     #get game data
-    my $game_hash_ref = &read_game_data_string();
+    my $game_hash_ref = &read_game_data_hash();
 
     #see if this is our game?
     if ( ( $game_hash_ref->{'user1'} ne $username ) and ( $game_hash_ref->{'user2'} ne $username ) )
@@ -456,27 +451,6 @@ sub update_board()
         {#block any move that is not delta 1 and delta 2
          &send_system_message( "Move can only be delta 1 and delta 2" );
         }
-=pod
-    #does the move cross any existing moves
-    my $it_crosses = 0;
-    foreach my $move ( keys  %{ $game_hash_ref->{'moves'} } )
-      {#compare move with each other move
-      my ($X1,$Y1,$X2,$Y2) = split ('_' , $move);
-      my $m = ($y1 - $y2) / ($x1 - $x2);
-      my $M = ($Y1 - $Y2) / ($X1 - $X2);
-      if ($M == $m) {next();}
-      my $b = $y1;
-      my $B = $Y1;
-      my $x = ($b-$B)/($M-$m);
-      my $y = ($m * $x) + $b;
-      #is $x between $x1 and $X1?
-      if (0) {}
-      }
-    if ($it_crosses == 1)
-      {
-      &send_system_message( "Move crosses another move." );
-      }
-=cut
 =pod
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet
@@ -516,7 +490,7 @@ sub update_board()
       $game_hash_ref->{'illegal_moves'}->{"$new_x1\_$new_y1\_$new_x2\_$new_y2"} = 1;
       }
 
-    #add move to move list and return new move list &get_game_moves()
+    #add move to move list and save
     #increase move count
     $game_hash_ref->{'move_count'} = $game_hash_ref->{'move_count'} + 1;
      #use a hash to store moves to avoid duplicates
@@ -536,7 +510,7 @@ sub update_board()
         $game_hash_ref->{'next_move'} = $game_hash_ref->{'user1'}
         }
 
-    &save_game_data_hash( $game_hash_ref );
+    &save_game_data_hash( $game_hash_ref ); #save all changes
     #send to client
     $game_hash_ref->{'pass'} = 3;
     my $message = $json->encode( $game_hash_ref );
@@ -545,8 +519,6 @@ sub update_board()
 
 sub read_chat_text_string()
 {
-my $message;
-my $output;
 my $filename = "$path_to_games/$public_private/$game/$chat_filename$chat_extension";
 #does file exist
 if ( ! -e $filename )
@@ -556,13 +528,12 @@ if ( ! -e $filename )
 #get game data
 open FILE , "<$filename";
 my @file_output = <FILE>;
-#my $game_hash_ref = $json->decode( $file_output );
 close FILE;
 my $file_output = join( '' , @file_output );
 return $file_output;
 }
 
-sub read_game_data_string()
+sub read_game_data_hash()
 {
 my $message;
 my $output;

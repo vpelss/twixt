@@ -44,7 +44,7 @@ background-color: yellow;
 background-color: green;
 }
 
-.nne , .ene , .ese , .sse /*, .ssw , .esw , .wnw , .nnw */
+.nne , .ene , .ese , .sse 
 {
 position:absolute;
 z-index: -1;
@@ -110,7 +110,8 @@ height: 50px;
 <script src="ui/jquery-ui.js"></script>
 <script src="js.cookie.js"></script>
 <script>
-    $( function() {
+//initialize dialog
+$( function() {
     $( "#dialog-message" ).dialog({
       modal: true,
        autoOpen: false,
@@ -122,6 +123,7 @@ height: 50px;
     });
   } );
 
+//initialize tabs
 $( function()
     {
     $( "#tabs" ).tabs(
@@ -131,10 +133,12 @@ $( function()
       });
     } );
 
+//create / initialize resizable chat
 $( function() {
     $( "#chat_board_resizable" ).resizable();
   } );
 
+//create spinner
 $( function() {
 	$( "#resize_spinner" ).spinner();
   });
@@ -394,14 +398,12 @@ for (x=1 ; x<23 ; x++)
 	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
 	}
 $('#board').append("<div CLASS='corner' id=23_0></div>");
-//$('#board').append('</br>');
 for (y=1 ; y<23 ; y++)
 	{
 	for (x=0 ; x<24 ; x++)
 		{
 		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
 		}
-  //$('#board').append('</br>');
 	}
 $('#board').append("<div CLASS='corner' id=0_23></div>");
 for (x=1 ; x<23 ; x++)
@@ -435,17 +437,6 @@ $( ".dot" ).mousedown( function( event )
 		}
 	);
 
-$( ".dot" ).on( "mouseenter", function()
-		{
-		//peg_enter( this.id );
-		}
-	);
-
-$( ".dot" ).on( "mouseleave", function()
-		{
-		//peg_leave( this.id );
-		}
-	);
 }
 
 function resize_board()
@@ -463,7 +454,6 @@ $('#board').css('height' , board_width  + 'px' );
 $('.dot , .corner').css('width' , dot_width +'px' );
 $('.dot , .corner').css('height' , dot_width + 'px' );
 $('.dot').css('background-size' , dot_width + 'px ' + dot_width + 'px');
-
 }
 
 function update_board_done( result )
@@ -476,7 +466,7 @@ $('#next_move').html( message );
 place_moves( result );
 //place chat text
 $('#chat_board').html( result.chat_text );
-$('#chat_board').scrollTop( 10000 ); //scroll to bottom
+$('#chat_board').scrollTop( 100000 ); //scroll to bottom
 }
 
 function place_moves( result )
@@ -485,7 +475,6 @@ var path_to_images = './images/';
 var moves = result.moves;
 //clear old moves
 $('#moves').html('');
-//var message = moves ;
 var x1 , y1 , x2 , y2;
 for (var move in moves)
   if ( moves.hasOwnProperty(move) )
@@ -495,7 +484,6 @@ for (var move in moves)
     y1 = the_array[1];
     x2 = the_array[2];
     y2 = the_array[3];
-    //[ x1 , y1 , x2 , y2 ]= move.split( '_' ) ;
 
     var dx = x1 - x2;
     var dy = y1 - y2;
@@ -503,52 +491,25 @@ for (var move in moves)
     var y_offset;
     var class_to_use;
 
-    //if ( ( dx == -1 ) && ( dy == -2 ) )
-      //{//nnw from point 1
-      //x_offset = 0;
-      //y_offset = 0;
-      //class_to_use = 'nnw';
-      //}
-    if ( ( dx == -1 ) && ( dy == -2 ) )
+     if ( ( dx == -1 ) && ( dy == -2 ) )
       {//sse from point 1
       x_offset = 0;
       y_offset = 0;
       class_to_use = 'sse';
       }
-
-    //if ( ( dx == -1 ) && ( dy == 2 ) )
-      //{//nne from point 1
-      //x_offset = 0;
-      //y_offset = -2;
-      //class_to_use = 'nne';
-      //}
-    if ( ( dx == -1 ) && ( dy == 2 ) )
+     if ( ( dx == -1 ) && ( dy == 2 ) )
       {//ssw from point 1
       x_offset = 0;
       y_offset = -2;
       class_to_use = 'nne';
       }
-
-    //if ( ( dx == -2 ) && ( dy == 1 ) )
-      //{//ene from point 1
-      //x_offset = 0;
-      //y_offset = -1;
-      //class_to_use = 'ene';
-      //}
     if ( ( dx == -2 ) && ( dy == 1 ) )
       {//esw from point 1
       x_offset = 0;
       y_offset = -1;
       class_to_use = 'ene';
       }
-
-   // if ( ( dx == -2 ) && ( dy == -1 ) )
-      //{//ese from point 1
-      //x_offset = 0;
-      //y_offset = 0;
-      //class_to_use = 'ese';
-      //}
-    if ( ( dx == -2 ) && ( dy == -1 ) )
+   if ( ( dx == -2 ) && ( dy == -1 ) )
       {//wnw from point 1
       x_offset = 0;
       y_offset = 0;
@@ -560,6 +521,7 @@ for (var move in moves)
     $('#moves').append("<div id='" + move + "'></div>");
     //assign class
     $('#' + move).addClass( class_to_use );
+    $('#' + move).addClass( 'move' ); //generic move class
     //set image
     var user2_img = '';
     if ( moves[move].move_owner != result.user1 )
@@ -612,7 +574,6 @@ else
 	//send move
   $('#move').val( highlighted_peg + '_' + id ); //set move value in form_send_moves
   form_call( 'form_send_move' ); //send it
-	//send_moves( highlighted_peg + '_' + id );
   //clear old peg
 	$('#' + highlighted_peg).css('background-color' , '');
   highlighted_peg = undefined;
@@ -626,7 +587,6 @@ var x1 , y1 , x2 , y2 , x , y , legal_move_id , top , left;
 var the_array = id.split( '_' ) ;
 x1 = the_array[0];
 y1 = the_array[1];
-//[ x1 , y1 ]= id.split( '_' ) ;
 
 var marker_array = [[1,-2] , [2,-1] , [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2]];
 
