@@ -10,6 +10,13 @@
 {
 position:relative;
 border: 1px solid black;
+
+}
+
+#board_resizable
+{
+background-color: transparent;
+//float: left;
 }
 
 #game_number
@@ -140,7 +147,7 @@ $( function()
 
 //create / initialize resizable board
 $( function() {
-    $( "#board" ).resizable();
+    $( "#board_resizable" ).resizable({aspectRatio: 1 / 1});
   } );
 
 //create / initialize resizable chat
@@ -148,27 +155,26 @@ $( function() {
     $( "#chat_board_resizable" ).resizable();
   } );
 
-//create spinner
-$( function() {
-	$( "#resize_spinner" ).spinner();
-  });
-
-$( document ).ready(function() {
+var board_width;
+$( document ).ready(function()
+  {
   // Handler for .ready() called.
-  //$( "#resize_spinner" ).on( "change", function( event, ui ) { build_board(); } );
   calculate_board_size();
-  //after value change!!!!!!!!
-  $( "#resize_spinner" ).on( "spin", function(  ) { build_board(); } );
-  //$( "#resize_spinner" ).on( "change", function(  ) { build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
-  //$( "#resize_spinner" ).on( "focusout", function(  ) { build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
-  $( "#resize_spinner" ).on( "change", function(  ) { set_board_size(); } );
-  $( "#resize_spinner" ).on( "focusout", function(  ) { set_board_size(); } );
+  $( "#board_resizable" ).width( board_width );
 
-  });
+  $( "#board_resizable" ).on( "resizestop", function( event, ui )
+    {
+    board_width = $( "#board_resizable" ).width();
+    set_board_size();
+    }
+    );
+
+  }
+  );
 
 function calculate_board_size()
 {
-var board_width;
+board_width;
 var width = $(window).innerWidth() ;
 var height = $(window).innerHeight();
 if ( width < height )
@@ -179,12 +185,14 @@ else
   {
   board_width = Math.round ( height * 0.9 ) ;
   }
-$( "#resize_spinner" ).spinner( "value", board_width );
+//$( "#resize_spinner" ).spinner( "value", board_width );
 }
 
 function set_board_size()
 {
-build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  );
+
+build_board();
+get_game( Cookies.get('game') , Cookies.get('public_private')  );
 }
 
 </script>
@@ -194,12 +202,12 @@ build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  );
 <body>
 
 <div id='big_game'>
-  <div id='board' class="ui-widget-content"><pre id='chat_board' >Chat Board</pre></div>
+  <div id='board_resizable' class="ui-widget-content">
+  <div id='board'><pre id='chat_board' >Chat Board</pre></div>
+  </div>
   <div id='game_number'></div>
   <div id='next_move'></div>
-  <div id='resize'><label for="resize_spinner">Board Width:</label>
-  <input id="resize_spinner" name="resize_spinner"></input></div>
-  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='calculate_board_size();set_board_size();return 0;' ></input></form>
+  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='calculate_board_size();$( "#board_resizable" ).width( board_width );$( "#board_resizable" ).height( board_width );set_board_size();return 0;' ></input></form>
   <br></br>
   <div id='message_div'>
   <form id='chat_form'>
@@ -416,8 +424,7 @@ function build_board()
 $('#big_game').show();
 $('#list_games').html('');
 //fill board with pegs
-$('#board').html('<ppe>sdfsdfsdjf</pre>');
-return;
+$('#board').html('');
 $('#board').append("<div CLASS='corner' id=0_0></div>");
 for (x=1 ; x<23 ; x++)
 	{
@@ -467,7 +474,6 @@ $( ".dot" ).mousedown( function( event )
 
 function resize_board()
 {
-var board_width = $( "#resize_spinner" ).spinner( "value");
 dot_width = (board_width / 24);
 //dot_width = Math.floor(board_width / 24);
 two_x = dot_width * 2;
