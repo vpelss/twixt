@@ -1,9 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
   <title>Twixt</title>
-<link rel="stylesheet" href="ui/jquery-ui.css">
+<link rel="stylesheet" href="ui/jquery-ui.css"></link>
 
 <STYLE TYPE="text/css">
 
@@ -44,7 +43,7 @@ background-color: yellow;
 background-color: green;
 }
 
-.nne , .ene , .ese , .sse 
+.nne , .ene , .ese , .sse
 {
 position:absolute;
 z-index: -1;
@@ -104,6 +103,12 @@ height: 50px;
   transform: translate(-50% , 0%);
   }
 
+#resize
+{
+float: left;
+padding-right: 10px;
+}
+
 </STYLE>
 
 <script src="jquery.js"></script>
@@ -133,6 +138,11 @@ $( function()
       });
     } );
 
+//create / initialize resizable board
+$( function() {
+    $( "#board" ).resizable();
+  } );
+
 //create / initialize resizable chat
 $( function() {
     $( "#chat_board_resizable" ).resizable();
@@ -146,23 +156,36 @@ $( function() {
 $( document ).ready(function() {
   // Handler for .ready() called.
   //$( "#resize_spinner" ).on( "change", function( event, ui ) { build_board(); } );
-  var board_width;
-  if ( $(window).width() < $(window).height() )
-    {
-    board_width = Math.round ( $(window).width() * 0.9 ) ;
-    }
-  else
-    {
-    board_width = Math.round ( $(window).height() * 0.9 ) ;
-    }
-  $( "#resize_spinner" ).spinner( "value", board_width );
+  calculate_board_size();
   //after value change!!!!!!!!
   $( "#resize_spinner" ).on( "spin", function(  ) { build_board(); } );
-  $( "#resize_spinner" ).on( "change", function(  ) {build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
-  $( "#resize_spinner" ).on( "focusout", function(  ) {build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
+  //$( "#resize_spinner" ).on( "change", function(  ) { build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
+  //$( "#resize_spinner" ).on( "focusout", function(  ) { build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  ); } );
+  $( "#resize_spinner" ).on( "change", function(  ) { set_board_size(); } );
+  $( "#resize_spinner" ).on( "focusout", function(  ) { set_board_size(); } );
 
   });
 
+function calculate_board_size()
+{
+var board_width;
+var width = $(window).innerWidth() ;
+var height = $(window).innerHeight();
+if ( width < height )
+  {
+  board_width = Math.round ( width * 0.9 ) ;
+  }
+else
+  {
+  board_width = Math.round ( height * 0.9 ) ;
+  }
+$( "#resize_spinner" ).spinner( "value", board_width );
+}
+
+function set_board_size()
+{
+build_board(); get_game( Cookies.get('game') , Cookies.get('public_private')  );
+}
 
 </script>
 
@@ -171,16 +194,18 @@ $( document ).ready(function() {
 <body>
 
 <div id='big_game'>
-  <div id='board'></div>
+  <div id='board' class="ui-widget-content"><pre id='chat_board' >Chat Board</pre></div>
   <div id='game_number'></div>
   <div id='next_move'></div>
   <div id='resize'><label for="resize_spinner">Board Width:</label>
-  <input id="resize_spinner" name="resize_spinner"></div>
+  <input id="resize_spinner" name="resize_spinner"></input></div>
+  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='calculate_board_size();set_board_size();return 0;' ></input></form>
+  <br></br>
   <div id='message_div'>
   <form id='chat_form'>
-  <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
-  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
-  <input type='submit' id='message_form_submit' onclick='return send_chat();'>
+  <input name="command" type="hidden" value="send_chat" id='command_send_chat'></input>
+  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'></input>
+  <input type='submit' id='message_form_submit' onclick='return send_chat();'></input>
   </form>
   </div>
   <div id='chat_board_resizable' class="ui-widget-content">
@@ -189,7 +214,7 @@ $( document ).ready(function() {
 </div>
 
 <div id="dialog-message" title="Twixt"></div>
-<div id="dialog-waiting"><img src='./images/flash.gif'></div>
+<div id="dialog-waiting"><img src='./images/flash.gif'></img></div>
 
 <script>
 $( "#dialog-waiting" ).hide();
@@ -212,70 +237,70 @@ $( "#dialog-waiting" ).hide();
 </div>
 
 <form id='form_create_game'>
-  <input name="command" type="hidden" value="create_game" id='command_create_game'>
+  <input name="command" type="hidden" value="create_game" id='command_create_game'></input>
   <p>
-    <input type='radio' name='public_private' value='public' checked='true'> Public. Anyone can join. First come first serve.
+    <input type='radio' name='public_private' value='public' checked='true'></input> Public. Anyone can join. First come first serve.
   </p>
   <p>
-  <input type='radio' name='public_private' value='private'> Private. You must send game link to a player.
+  <input type='radio' name='public_private' value='private'></input>  Private. You must send game link to a player.
   </p>
   <p>
-    <input type='submit'  onclick='return form_call("form_create_game");'>
+    <input type='submit'  onclick='return form_call("form_create_game");'></input>
   </p>
 </form>
 
   <form id='form_login'>
-<input name="command" type="hidden" value="login" id='command_login'>
-    <p><input type='text' name="username" placeholder="username" id='username_login'></p>
-    <p><input type='password' name="password" placeholder="password" id='password_login'></p>
-    <p><input type='submit'  onclick='return form_call("form_login"); '></p>
+<input name="command" type="hidden" value="login" id='command_login'></input>
+    <p><input type='text' name="username" placeholder="username" id='username_login'></input> </p>
+    <p><input type='password' name="password" placeholder="password" id='password_login'></input> </p>
+    <p><input type='submit'  onclick='return form_call("form_login"); '></input> </p>
     </form>
 
   <form id='form_logout'>
-<input name="command" type="hidden" value="login" id='command_logout'>
-    <p><input type='submit' value='Logout' onclick='return logout();'></p>
+<input name="command" type="hidden" value="login" id='command_logout'></input>
+    <p><input type='submit' value='Logout' onclick='return logout();'></input> </p>
     </form>
 
 <form  id='form_register'>
- <input name="command" type="hidden" value="register" id='command_register'>
-    <p><input type='text' name="username" placeholder="username" id='username_register'></p>
-    <p><input type='password' name="password" placeholder="password" id='password_register'></p>
-    <p><input type='text' name="email" placeholder="email" id='email_register'></p>
-    <p><input type='submit'  onclick='return form_call("form_register");'></p>
+ <input name="command" type="hidden" value="register" id='command_register'></input>
+    <p><input type='text' name="username" placeholder="username" id='username_register'></input> </p>
+    <p><input type='password' name="password" placeholder="password" id='password_register'></input> </p>
+    <p><input type='text' name="email" placeholder="email" id='email_register'></input> </p>
+    <p><input type='submit'  onclick='return form_call("form_register");'></input> </p>
 </form>
 
 <form id='form_forgot_password'>
-    <input name="command" type="hidden" value="forgot_password">
-    <p><input type='text'  name="username" placeholder="username"></p>
-    <p><input type='submit'  onclick='return form_call("form_forgot_password");'></p>
+    <input name="command" type="hidden" value="forgot_password"></input>
+    <p><input type='text'  name="username" placeholder="username"></input> </p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_password");'></input> </p>
 </form>
 
 <form id='form_forgot_username'>
-    <input name="command" type="hidden" value="forgot_username">
-    <p><input type='text'  name="email" placeholder="email"></p>
-    <p><input type='submit'  onclick='return form_call("form_forgot_username");'></p>
+    <input name="command" type="hidden" value="forgot_username"></input>
+    <p><input type='text'  name="email" placeholder="email"></input> </p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_username");'></input> </p>
 </form>
 
 <form id='form_reset_password'>
-  <input name="command" type="hidden" value="reset_password">
-    <p><input type='text'   name='username' placeholder="username" id='username_reset_password'></p>
-    <p><input type='password' name="oldpassword" placeholder="old password" id='old_password_reset_password'></p>
-    <p><input type='password' name="newpassword" placeholder="new password" id='new_password_reset_password'></p>
-    <p><input type='submit'  onclick='return form_call("form_reset_password");'></p>
+  <input name="command" type="hidden" value="reset_password"></input>
+    <p><input type='text'   name='username' placeholder="username" id='username_reset_password'></input> </p>
+    <p><input type='password' name="oldpassword" placeholder="old password" id='old_password_reset_password'></input> </p>
+    <p><input type='password' name="newpassword" placeholder="new password" id='new_password_reset_password'></input> </p>
+    <p><input type='submit'  onclick='return form_call("form_reset_password");'></input> </p>
   </form>
 
 </div>
 
 <div id='hidden_div'>
 <form id='form_get_games'>
-  <input name="command" type="hidden" value="get_games">
+  <input name="command" type="hidden" value="get_games"></input>
 </form>
 <form id='form_update_board'>
-  <input name="command" type="hidden" value="update_board">
+  <input name="command" type="hidden" value="update_board"></input>
 </form>
 <form id='form_send_move'>
-  <input name="command" type="hidden" value="send_move">
-  <input name="move" id='move' type="hidden">
+  <input name="command" type="hidden" value="send_move"></input>
+  <input name="move" id='move' type="hidden"></input>
 </form>
 </div>
 
@@ -391,7 +416,8 @@ function build_board()
 $('#big_game').show();
 $('#list_games').html('');
 //fill board with pegs
-$('#board').html('');
+$('#board').html('<ppe>sdfsdfsdjf</pre>');
+return;
 $('#board').append("<div CLASS='corner' id=0_0></div>");
 for (x=1 ; x<23 ; x++)
 	{
@@ -583,13 +609,11 @@ else
 
 function add_legal_moves( id )
 {
-var x1 , y1 , x2 , y2 , x , y , legal_move_id , top , left;
+var x1 , y1 , x , y , legal_move_id , top , left;
 var the_array = id.split( '_' ) ;
 x1 = the_array[0];
 y1 = the_array[1];
-
 var marker_array = [[1,-2] , [2,-1] , [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2]];
-
 for(var offset in marker_array)
     {
     x = Number(x1) + marker_array[offset][0];
