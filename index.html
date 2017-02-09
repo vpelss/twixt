@@ -168,6 +168,11 @@ $( document ).ready(function()
     set_board_size();
     }
     );
+  //get url game requests!!!!
+  if ( gup('game') !== '' && gup('public_private') !== '' )
+    {
+    get_game( gup('game') , gup('public_private'));
+    }
 
   }
   );
@@ -231,6 +236,7 @@ $( "#dialog-waiting" ).hide();
 <div id="tabs">
 
 <ul>
+    <li><a href="#rules">Rules</a></li>
     <li><a href="#list_games" onclick='form_call("form_get_games");'>Games</a></li>
     <li><a href="#form_create_game">Create Game</a></li>
     <li><a href="#form_login">Login</a></li>
@@ -240,6 +246,23 @@ $( "#dialog-waiting" ).hide();
     <li><a href="#form_forgot_username">Forgot Username</a></li>
     <li><a href="#form_reset_password">Reset Password</a></li>
 </ul>
+
+<div id='rules'>
+<ul>
+  <li>
+  Players alternate placing pegs, of their color, on the board. Blue goes first.
+  </li>
+  <li>
+  Players may not place a peg on their opponent's border rows.
+  </li>
+  <li>
+  You may link pegs which are your own colour. The links can only go between two pegs in a knight's move fashion and cannot cross another link of the opponent's colour.
+  </li>
+  <li>
+  You win if you make a continuous chain of linked pegs connecting your border rows. If neither side can achieve this, the game is a draw.
+  </li>
+</ul>
+</div>
 
 <div id='list_games'>
 </div>
@@ -322,12 +345,6 @@ var highlighted_peg;
 
 $('#big_game').hide();
 
-//get url game requests!!!!
-if ( gup('game') !== '' && gup('public_private') !== '' )
-  {
-  get_game( gup('game') , gup('public_private'));
-  }
-
 function gup( name )
 {
   name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -395,14 +412,14 @@ for(game_number in result.games.public)
   if ( result.games.public.hasOwnProperty(game_number) )
     {
     url_link = url + "?game=" + game_number + "&public_private=public";
-    html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ')</a>' + " " + url_link + '</br>' ;
+    html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ')</a>' + " <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
     }
 html += 'Private</br>';
 for(game_number in result.games.private)
   if ( result.games.private.hasOwnProperty(game_number) )
     {
     url_link = url + "?game=" + game_number + "&public_private=" + username;
-    html += '<a href=# onclick=get_game("' + game_number + '","' + username + '");return(0); >' + game_number + ' (' + result.games.private[game_number].user1 + ' , ' + result.games.private[game_number].user2 + ') </a>' + " " + url_link + '</br>' ;
+    html += '<a href=# onclick=get_game("' + game_number + '","' + username + '");return(0); >' + game_number + ' (' + result.games.private[game_number].user1 + ' , ' + result.games.private[game_number].user2 + ') </a>' + " <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
     }
 $( '#list_games' ).html( html );
 }
