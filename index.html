@@ -509,7 +509,8 @@ function update_board_done( result )
 {
 //user data comming
 next_move = result.next_move;
-var message = "Next move: " + next_move + "";
+var next_move_color = result.next_move_color;
+var message = "Next Move: "  + next_move + ' Target Lines: ' + next_move_color;
 $('#next_move').html( message );
 //place pegs received from data????
 place_moves( result );

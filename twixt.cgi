@@ -319,8 +319,29 @@ sub create_game()
         #$output->{'public_private'} = $public_private;
         $output->{'user1'} = $username;
         $output->{'next_move'} = $username;
+        $output->{'next_move_color'} = 'blue';
         $output->{'number_of_users'} = 1;
         $output->{'moves'} = {};
+        #create points that belong exclusively to players
+        my ($x , $y);
+=pod cant do until player has joined, note user can cheat here as user2 pegs not marked
+        for ($x = 0 ; $x < 24 ; $x++)
+          {#owned by player1
+          $output->{'points'}->{"$x\_0"} = 'user2';
+          $output->{'points'}->{"$x\_23"} = 'user2';
+          }
+=cut
+        for ($y = 0 ; $y < 24 ; $y++)
+          {#owned by user1
+          $output->{'points'}->{"0_$y"} = $username;
+          $output->{'points'}->{"0_$y"} = $username;
+          }
+        #create points that belong to no one. corners
+        $output->{'points'}->{"0_0"} = 'corner';
+        $output->{'points'}->{"0_23"} = 'corner';
+        $output->{'points'}->{"23_0"} = 'corner';
+        $output->{'points'}->{"23_23"} = 'corner';
+
         $message = $json->encode( $output );
         print FILE $message;
         close FILE;
@@ -389,11 +410,19 @@ sub update_board()
         #add us to game
         $game_hash_ref->{'number_of_users'} = 2;
         $game_hash_ref->{'user2'} = $username;
+        $game_hash_ref->{'next_move_color'} = 'blue'; #initially assume that user1 has not moved
         #if next move != user1, next move = us!
         if ( $game_hash_ref->{'user1'} ne $game_hash_ref->{'next_move'} )
           {#if next move != user1, next move = us!
           $game_hash_ref->{'next_move'} = $game_hash_ref->{'user2'};
+          $game_hash_ref->{'next_move_color'} = 'red';
           }
+        for (my $x = 0 ; $x < 24 ; $x++)
+          {#pegs owned by user2
+          $game_hash_ref->{'points'}->{"$x\_0"} = $username;
+          $game_hash_ref->{'points'}->{"$x\_23"} = $username;
+          }
+
         &save_game_data_hash( $game_hash_ref );
         }
 
@@ -503,11 +532,13 @@ sub update_board()
     #change next_move
     if ( $game_hash_ref->{'next_move'} eq $game_hash_ref->{'user1'} )
         {
-        $game_hash_ref->{'next_move'} = $game_hash_ref->{'user2'}
+        $game_hash_ref->{'next_move'} = $game_hash_ref->{'user2'};
+        $game_hash_ref->{'next_move_color'} = 'red';
         }
     else
         {
-        $game_hash_ref->{'next_move'} = $game_hash_ref->{'user1'}
+        $game_hash_ref->{'next_move'} = $game_hash_ref->{'user1'};
+        $game_hash_ref->{'next_move_color'} = 'blue';
         }
 
     &save_game_data_hash( $game_hash_ref ); #save all changes
