@@ -1,16 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 <head>
   <title>Twixt</title>
-<link rel="stylesheet" href="ui/jquery-ui.css"></link>
-
+<link rel="stylesheet" href="ui/jquery-ui.css">
 <STYLE TYPE="text/css">
 
 #board
 {
 position:relative;
 border: 1px solid black;
-
 }
 
 #board_resizable
@@ -162,7 +160,7 @@ $( document ).ready(function()
   calculate_board_size();
   $( "#board_resizable" ).width( board_width );
 
-  $( "#board_resizable" ).on( "resizestop", function( event, ui )
+  $( "#board_resizable" ).on( "resizestop", function( event , ui )
     {
     board_width = $( "#board_resizable" ).width();
     set_board_size();
@@ -190,7 +188,6 @@ else
   {
   board_width = Math.round ( height * 0.9 ) ;
   }
-//$( "#resize_spinner" ).spinner( "value", board_width );
 }
 
 function set_board_size()
@@ -212,13 +209,13 @@ get_game( Cookies.get('game') , Cookies.get('public_private')  );
   </div>
   <div id='game_number'></div>
   <div id='next_move'></div>
-  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='calculate_board_size();$( "#board_resizable" ).width( board_width );$( "#board_resizable" ).height( board_width );set_board_size();return 0;' ></input></form>
-  <br></br>
+  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='calculate_board_size();$( "#board_resizable" ).width( board_width );$( "#board_resizable" ).height( board_width );set_board_size();return 0;' ></form>
+  <br>
   <div id='message_div'>
   <form id='chat_form'>
-  <input name="command" type="hidden" value="send_chat" id='command_send_chat'></input>
-  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'></input>
-  <input type='submit' id='message_form_submit' onclick='return send_chat();'></input>
+  <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
+  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
+  <input type='submit' id='message_form_submit' onclick='return send_chat();'>
   </form>
   </div>
   <div id='chat_board_resizable' class="ui-widget-content">
@@ -227,7 +224,7 @@ get_game( Cookies.get('game') , Cookies.get('public_private')  );
 </div>
 
 <div id="dialog-message" title="Twixt"></div>
-<div id="dialog-waiting"><img src='./images/flash.gif'></img></div>
+<div id="dialog-waiting"><img src='./images/flash.gif'></div>
 
 <script>
 $( "#dialog-waiting" ).hide();
@@ -268,70 +265,70 @@ $( "#dialog-waiting" ).hide();
 </div>
 
 <form id='form_create_game'>
-  <input name="command" type="hidden" value="create_game" id='command_create_game'></input>
+  <input name="command" type="hidden" value="create_game" id='command_create_game'>
   <p>
-    <input type='radio' name='public_private' value='public' checked='true'></input> Public. Anyone can join. First come first serve.
+    <input type='radio' name='public_private' value='public' checked='true'> Public. Anyone can join. First come first serve.
   </p>
   <p>
-  <input type='radio' name='public_private' value='private'></input>  Private. You must send game link to a player.
+  <input type='radio' name='public_private' value='private'>  Private. You must send game link to a player.
   </p>
   <p>
-    <input type='submit'  onclick='return form_call("form_create_game");'></input>
+    <input type='submit'  onclick='return form_call("form_create_game");'>
   </p>
 </form>
 
   <form id='form_login'>
-<input name="command" type="hidden" value="login" id='command_login'></input>
-    <p><input type='text' name="username" placeholder="username" id='username_login'></input> </p>
-    <p><input type='password' name="password" placeholder="password" id='password_login'></input> </p>
-    <p><input type='submit'  onclick='return form_call("form_login"); '></input> </p>
+<input name="command" type="hidden" value="login" id='command_login'>
+    <p><input type='text' name="username" placeholder="username" id='username_login'> </p>
+    <p><input type='password' name="password" placeholder="password" id='password_login'> </p>
+    <p><input type='submit'  onclick='return form_call("form_login"); '> </p>
     </form>
 
   <form id='form_logout'>
-<input name="command" type="hidden" value="login" id='command_logout'></input>
-    <p><input type='submit' value='Logout' onclick='return logout();'></input> </p>
+<input name="command" type="hidden" value="login" id='command_logout'>
+    <p><input type='submit' value='Logout' onclick='return logout();'> </p>
     </form>
 
 <form  id='form_register'>
- <input name="command" type="hidden" value="register" id='command_register'></input>
-    <p><input type='text' name="username" placeholder="username" id='username_register'></input> </p>
-    <p><input type='password' name="password" placeholder="password" id='password_register'></input> </p>
-    <p><input type='text' name="email" placeholder="email" id='email_register'></input> </p>
-    <p><input type='submit'  onclick='return form_call("form_register");'></input> </p>
+ <input name="command" type="hidden" value="register" id='command_register'>
+    <p><input type='text' name="username" placeholder="username" id='username_register'> </p>
+    <p><input type='password' name="password" placeholder="password" id='password_register'> </p>
+    <p><input type='text' name="email" placeholder="email" id='email_register'> </p>
+    <p><input type='submit'  onclick='return form_call("form_register");'> </p>
 </form>
 
 <form id='form_forgot_password'>
-    <input name="command" type="hidden" value="forgot_password"></input>
-    <p><input type='text'  name="username" placeholder="username"></input> </p>
-    <p><input type='submit'  onclick='return form_call("form_forgot_password");'></input> </p>
+    <input name="command" type="hidden" value="forgot_password">
+    <p><input type='text'  name="username" placeholder="username"> </p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_password");'> </p>
 </form>
 
 <form id='form_forgot_username'>
-    <input name="command" type="hidden" value="forgot_username"></input>
-    <p><input type='text'  name="email" placeholder="email"></input> </p>
-    <p><input type='submit'  onclick='return form_call("form_forgot_username");'></input> </p>
+    <input name="command" type="hidden" value="forgot_username">
+    <p><input type='text'  name="email" placeholder="email"> </p>
+    <p><input type='submit'  onclick='return form_call("form_forgot_username");'> </p>
 </form>
 
 <form id='form_reset_password'>
-  <input name="command" type="hidden" value="reset_password"></input>
-    <p><input type='text'   name='username' placeholder="username" id='username_reset_password'></input> </p>
-    <p><input type='password' name="oldpassword" placeholder="old password" id='old_password_reset_password'></input> </p>
-    <p><input type='password' name="newpassword" placeholder="new password" id='new_password_reset_password'></input> </p>
-    <p><input type='submit'  onclick='return form_call("form_reset_password");'></input> </p>
+  <input name="command" type="hidden" value="reset_password">
+    <p><input type='text'   name='username' placeholder="username" id='username_reset_password'> </p>
+    <p><input type='password' name="oldpassword" placeholder="old password" id='old_password_reset_password'> </p>
+    <p><input type='password' name="newpassword" placeholder="new password" id='new_password_reset_password'> </p>
+    <p><input type='submit'  onclick='return form_call("form_reset_password");'> </p>
   </form>
 
 </div>
 
 <div id='hidden_div'>
 <form id='form_get_games'>
-  <input name="command" type="hidden" value="get_games"></input>
+  <input name="command" type="hidden" value="get_games">
 </form>
 <form id='form_update_board'>
-  <input name="command" type="hidden" value="update_board"></input>
+  <input name="command" type="hidden" value="update_board">
 </form>
 <form id='form_send_move'>
-  <input name="command" type="hidden" value="send_move"></input>
-  <input name="move" id='move' type="hidden"></input>
+  <input name="command" type="hidden" value="send_move">
+  <input name="move" id='move' type="hidden">
 </form>
 </div>
 

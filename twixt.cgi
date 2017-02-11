@@ -18,7 +18,6 @@ my $game_filename = 'game';
 my $game_extension = '.txt';
 my $chat_filename = 'messages';
 my $chat_extension = '.txt';
-#my $message; #global return message
 my $json = JSON->new->allow_nonref;
 
 my $username; #global so all routines can access after login has been verified
@@ -86,13 +85,13 @@ send_output($message);
 }
 
 sub register()
-     { #get data
-      my $message;
-     my $username = $in{'username'};
-     $username =~ s/\s\W//; #no white space, only alpha numeric
-     my $password = $in{'password'};
-     $password =~ s/\s\W//; #no white space, only alpha numeric
-     my $email = $in{'email'};
+    { #get data
+    my $message;
+    my $username = $in{'username'};
+    $username =~ s/\s\W//; #no white space, only alpha numeric
+    my $password = $in{'password'};
+    $password =~ s/\s\W//; #no white space, only alpha numeric
+    my $email = $in{'email'};
     if ( $username eq '' or $password eq '' or $email eq '' )
                 {    #form submit error
                &send_system_message( "Blank fields are not allowed");
@@ -129,23 +128,9 @@ sub register()
 
      }
 
-sub old_check_login()
-     { #get data
-      my $msg;
-     if ($logged_in == 1)
-        {
-        $msg = "Logged in.";
-        }
-    else
-        { #error case
-        $msg = $logged_in;
-        }
-     &send_system_message( $msg );
-     }
-
 sub reset_password()
-     { #get data
-      my $message;
+    { #get data
+    my $message;
      my $username = $in{'username'};
      $username =~ s/\s\W//; #no white space, only alpha numeric
      my $old_password = $in{'oldpassword'};
@@ -314,35 +299,22 @@ sub create_game()
 
         #create game file
         open FILE , ">$dir/$game_filename$game_extension";
-        my $output;
-        $output->{'game'} = $timestamp;
-        #$output->{'public_private'} = $public_private;
-        $output->{'user1'} = $username;
-        $output->{'next_move'} = $username;
-        $output->{'next_move_color'} = 'blue';
-        $output->{'number_of_users'} = 1;
-        $output->{'moves'} = {};
-        #create points that belong exclusively to players
-        my ($x , $y);
-=pod cant do until player has joined, note user can cheat here as user2 pegs not marked
-        for ($x = 0 ; $x < 24 ; $x++)
-          {#owned by player1
-          $output->{'points'}->{"$x\_0"} = 'user2';
-          $output->{'points'}->{"$x\_23"} = 'user2';
-          }
-=cut
-        for ($y = 0 ; $y < 24 ; $y++)
-          {#owned by user1
-          $output->{'points'}->{"0_$y"} = $username;
-          $output->{'points'}->{"0_$y"} = $username;
-          }
-        #create points that belong to no one. corners
-        $output->{'points'}->{"0_0"} = 'corner';
-        $output->{'points'}->{"0_23"} = 'corner';
-        $output->{'points'}->{"23_0"} = 'corner';
-        $output->{'points'}->{"23_23"} = 'corner';
+        my $game_hash_ref;
+        $game_hash_ref->{'game'} = $timestamp;
+        #$game_hash_ref->{'public_private'} = $public_private;
+        $game_hash_ref->{'user1'} = $username;
+        $game_hash_ref->{'next_move'} = $username;
+        $game_hash_ref->{'next_move_color'} = 'blue';
+        $game_hash_ref->{'number_of_users'} = 1;
+        $game_hash_ref->{'moves'} = {};
 
-        $message = $json->encode( $output );
+         #create points that belong to no one. corners
+        $game_hash_ref->{'points'}->{"0_0"} = 'corner';
+        $game_hash_ref->{'points'}->{"0_23"} = 'corner';
+        $game_hash_ref->{'points'}->{"23_0"} = 'corner';
+        $game_hash_ref->{'points'}->{"23_23"} = 'corner';
+
+        $message = $json->encode( $game_hash_ref );
         print FILE $message;
         close FILE;
 
@@ -417,10 +389,16 @@ sub update_board()
           $game_hash_ref->{'next_move'} = $game_hash_ref->{'user2'};
           $game_hash_ref->{'next_move_color'} = 'red';
           }
+        #create points that belong exclusively to players. eg edges
+        for (my $y = 0 ; $y < 24 ; $y++)
+          {#owned by user1
+          $game_hash_ref->{'points'}->{"0_$y"} = $game_hash_ref->{'user1'};
+          $game_hash_ref->{'points'}->{"23_$y"} = $game_hash_ref->{'user1'};
+          }
         for (my $x = 0 ; $x < 24 ; $x++)
           {#pegs owned by user2
-          $game_hash_ref->{'points'}->{"$x\_0"} = $username;
-          $game_hash_ref->{'points'}->{"$x\_23"} = $username;
+          $game_hash_ref->{'points'}->{"$x\_0"} = $game_hash_ref->{'user2'};
+          $game_hash_ref->{'points'}->{"$x\_23"} = $game_hash_ref->{'user2'};
           }
 
         &save_game_data_hash( $game_hash_ref );
@@ -455,6 +433,10 @@ sub update_board()
         {
         &send_system_message( "You are not a player in this game.");
         }
+    if ( $game_hash_ref->{'number_of_users'} ne 2 )
+      {
+      &send_system_message( "Awaiting another player first." );
+      }
     if ( exists  $game_hash_ref->{'moves'}->{ $move_string } )
         {#existing move
         &send_system_message( "Move already exists." );
@@ -480,19 +462,23 @@ sub update_board()
         {#block any move that is not delta 1 and delta 2
          &send_system_message( "Move can only be delta 1 and delta 2" );
         }
-=pod
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet
-        $output->{'pass'} = 0;
-        $output->{'message'} = ;
-        $message = $json->encode( $output );
-       &send_system_message( "Not your move dude." );
+        &send_system_message( "Not your move dude." );
         }
-=cut
-    #check if we are crossing a move
-    if ( exists $game_hash_ref->{'illegal_moves'}->{ $move_string } )
+    #check if we are crossing other player's move
+    my $other_player_name;
+    if ( $game_hash_ref->{'user1'} eq $username )
       {
-      &send_system_message('This move crosses another move');
+      $other_player_name = $game_hash_ref->{'user2'};
+      }
+    else
+      {
+      $other_player_name = $game_hash_ref->{'user1'};
+      }
+    if ( exists $game_hash_ref->{'illegal_moves'}->{ $username }->{ $move_string } )
+      {
+      &send_system_message('This move crosses another players move');
       }
 
     #set $illegal_moves{x1_y1_x2_y2} = 1 after placing a move
@@ -516,7 +502,7 @@ sub update_board()
       my $new_y1 = $y1 + $offset_y1;
       my $new_x2 = $x1 + $offset_x2;
       my $new_y2 = $y1 + $offset_y2;
-      $game_hash_ref->{'illegal_moves'}->{"$new_x1\_$new_y1\_$new_x2\_$new_y2"} = 1;
+      $game_hash_ref->{'illegal_moves'}->{ $other_player_name }->{"$new_x1\_$new_y1\_$new_x2\_$new_y2"} = 1;
       }
 
     #add move to move list and save
