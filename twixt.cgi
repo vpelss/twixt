@@ -4,6 +4,7 @@ use strict;
 use Socket;
 use CGI::Cookie;
 use JSON;
+#use Email::Valid;
 
 my %in;
 my %cookies = CGI::Cookie->fetch;
@@ -65,12 +66,20 @@ if ( $command eq 'get_games' ) { &get_games(); }
 if ( $command eq 'update_board' ) { &update_board(); }
 if ( $command eq 'send_move' ) { &incomming_move(); }
 if ( $command eq 'send_chat' ) { &incomming_chat(); }
+if ( $command eq 'delete_game' ) { &delete_game(); }
 
 &send_system_message("End of code. Nothing was done. Command: $command");
 } #main done
 
 sub incomming_chat()
 {
+#see if this is our game?
+my $game_hash_ref = &read_game_data_hash();
+if ( ( $game_hash_ref->{'user1'} ne $username ) and ( $game_hash_ref->{'user2'} ne $username ) )
+        {
+        &send_system_message( "You are not a player in this game.");
+        }
+
 my $chat_text = $in{'chat_text'};
 $chat_text =~ s/[^\d\w\s]//g; #sanitize
 my $dir = "$path_to_games/$public_private/$game";
@@ -79,7 +88,7 @@ open FILE , ">>$file";
 print FILE "$username: $chat_text\n";
 close FILE;
 
-my $game_hash_ref->{'pass'} = 10; #10 means no output to js screen
+$game_hash_ref->{'pass'} = 10; #10 means no output to js screen
 my $message = $json->encode( $game_hash_ref );
 send_output($message);
 }
@@ -98,7 +107,7 @@ sub register()
                 }
      if ( ! &valid_email($email) )
         {
-       &send_system_message( "$email is not a valid email." );
+       &send_system_message( "Not a valid email." );
         }
      if ( ! -e "$path_to_users")
             {#create next directory
@@ -262,6 +271,30 @@ sub forgot_username()
         &send_system_message("Your usernames were sent to <font color=red><b>$email</b></font>.");
         }
      }
+
+sub delete_game()
+{
+my $game_hash_ref =  &read_game_data_hash();
+if ( $username ne $game_hash_ref->{'user1'} )
+  {
+  &send_system_message("Only the game creator can delete this game.");
+  }
+if ( $public_private eq 'private' )
+  {
+  $public_private = $username;
+  }
+my $dir = "$path_to_games/$public_private/$game";
+my $rs = opendir( DIR, $dir );
+my @dir = readdir(DIR);
+close DIR;
+foreach my $file ( @dir )
+  {
+  if ( $file eq '.' or $file eq '..' ) {next();}
+  unlink "$dir/$file" or warn "Could not unlink $file: $!";
+  }
+$rs = rmdir($dir);
+&send_system_message("Game deleted.");
+}
 
 sub create_game()
         {
@@ -729,11 +762,16 @@ exit -1;
 
 sub valid_email
 {
+my $username = qr/[a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?/;
+my $domain   = qr/[a-z0-9.-]+/;
+#my $regex = $email =~ /^$username\@$domain$/;
+
  my $testmail = $_[0];
   if ($testmail =~/ /)
    { return 0; }
-  if ($testmail =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
-  $testmail !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/)
+  #if ( $testmail =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
+  #$testmail !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/ )
+  if ( $testmail !~ /^$username\@$domain$/ )
    { return 0; }
    else { return 1; }
 }

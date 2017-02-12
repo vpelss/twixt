@@ -14,7 +14,6 @@ border: 1px solid black;
 #board_resizable
 {
 background-color: transparent;
-//float: left;
 }
 
 #game_number
@@ -114,6 +113,12 @@ float: left;
 padding-right: 10px;
 }
 
+.fake_link
+{
+ cursor: pointer;
+ float: left;
+}
+
 </STYLE>
 
 <script src="jquery.js"></script>
@@ -177,7 +182,7 @@ $( document ).ready(function()
 
 function calculate_board_size()
 {
-board_width;
+//board_width;
 var width = $(window).innerWidth() ;
 var height = $(window).innerHeight();
 if ( width < height )
@@ -217,6 +222,7 @@ return false;
   <div id='game_number'></div>
   <div id='next_move'></div>
   <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' ></form>
+  <form id='delete_form'><input type='submit' value='Delete Game' onclick='return form_call("delete_form");' ><input name="command" type="hidden" value="delete_game" id='delete_game'></form>
   <br>
   <div id='message_div'>
   <form id='chat_form'>
@@ -252,6 +258,7 @@ $( "#dialog-waiting" ).hide();
 </ul>
 
 <div id='rules'>
+  <h3>Twixt</h3>
 <ul>
   <li>
   Goal: Create a continuous line from one side of the board to the other before the other player.
@@ -390,6 +397,12 @@ if (result.pass == 4) { get_games_done(result); }
 
 function form_call( form_id_string )
 {
+//close existing game
+if ( form_id_string != 'form_update_board' && form_id_string != 'chat_form' && form_id_string != 'form_send_move' && form_id_string != delete_form )
+  {
+  window.clearTimeout( timer_id );
+  $('#big_game').hide();
+  }
 var skip_wait = 0;
 if ( form_id_string == 'form_update_board') { skip_wait = 1; }
 if ( form_id_string == 'chat_form') { skip_wait = 1; }
@@ -411,28 +424,61 @@ $('#dialog-message').dialog( "open" );
 return 0;
 }
 
+function generate_link_line( game_number , username , player1 , player2 )
+{
+//var game_number;
+//var username = Cookies.get('username');
+var html;
+var pathArray = location.href.split( '?' );
+var url = pathArray[0];
+var url_link ;
+//var player1;
+//var player2;
+var on_click;
+
+if (player2 === null) {player2 = 'open';}
+url_link = url + '?game=' + game_number + '&public_private=' + username;
+on_click = 'onclick="get_game(\'' + game_number + '\' , \'' + username + '\');"';
+//direct link
+html = '<div class="fake_link" ' + on_click + '><u>' + game_number + '</u></div>';
+//players
+html += '&nbsp; (Player1: ' + player1 + ' , Player2: ' + player2 + ')';
+html += " Share Link: <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
+
+return html;
+}
+
 function get_games_done(result)
 {
 $("#dialog-waiting" ).hide();
 var game_number;
 var username = Cookies.get('username');
-var html = 'Public</br>';
+var html;
 var pathArray = location.href.split( '?' );
 var url = pathArray[0];
 var url_link ;
+var player1;
+var player2;
+var on_click;
 
+html = '<p>Public games are for anyone to join. First come, first serve. Private games can only be seen by you and those you send a copy of the link to.</p>';
+html += 'Public</br>';
 for(game_number in result.games.public)
+  {
   if ( result.games.public.hasOwnProperty(game_number) )
     {
-    url_link = url + "?game=" + game_number + "&public_private=public";
-    html += '<a href=# onclick=get_game("' + game_number + '","public");return(0); >' + game_number + ' (' + result.games.public[game_number].user1 + ' , ' + result.games.public[game_number].user2 + ')</a>' + " <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
+    player1 = result.games.public[game_number].user1;
+    player2 = result.games.public[game_number].user2;
+    html += generate_link_line( game_number , 'public' , player1 , player2 );
     }
-html += 'Private</br>';
+  }
+html += '<p></p>Private</br>';
 for(game_number in result.games.private)
   if ( result.games.private.hasOwnProperty(game_number) )
     {
-    url_link = url + "?game=" + game_number + "&public_private=" + username;
-    html += '<a href=# onclick=get_game("' + game_number + '","' + username + '");return(0); >' + game_number + ' (' + result.games.private[game_number].user1 + ' , ' + result.games.private[game_number].user2 + ') </a>' + " <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
+    player1 = result.games.private[game_number].user1;
+    player2 = result.games.private[game_number].user2;
+    html += generate_link_line( game_number , username , player1 , player2 );
     }
 $( '#list_games' ).html( html );
 }
@@ -444,8 +490,8 @@ build_board();
 $('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
-//timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
-form_call("form_update_board");
+timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
+//form_call("form_update_board");
 highlighted_peg = undefined; //required for board resizing. else first click is not visible?
 }
 
