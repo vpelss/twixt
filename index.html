@@ -174,7 +174,14 @@ $( document ).ready(function()
   //get url game requests!!!!
   if ( gup('game') !== '' && gup('public_private') !== '' )
     {
-    get_game( gup('game') , gup('public_private'));
+    if ( Cookies.get('username') !== undefined && Cookies.get('password') !== undefined )
+      {
+      get_game( gup('game') , gup('public_private'));
+      }
+    else
+      {
+      system_message( 'Login or register for an account first.' );
+      }
     }
 
   }
@@ -255,7 +262,9 @@ $( "#dialog-waiting" ).hide();
     <li><a href="#form_forgot_password">Forgot Password</a></li>
     <li><a href="#form_forgot_username">Forgot Username</a></li>
     <li><a href="#form_reset_password">Reset Password</a></li>
+    <li><a href="#twixt_home" onclick='document.open("./");'>Twixt Home</a></li>
 </ul>
+
 
 <div id='rules'>
   <h3>Twixt</h3>
@@ -308,7 +317,7 @@ $( "#dialog-waiting" ).hide();
     </form>
 
   <form id='form_logout'>
-<input name="command" type="hidden" value="login" id='command_logout'>
+<input name="command" type="hidden" value="logout" id='command_logout'>
     <p><input type='submit' value='Logout' onclick='return logout();'> </p>
     </form>
 
@@ -383,7 +392,7 @@ $("#dialog-waiting" ).hide();
 var result =  JSON.parse( data );
 
 //system message
-if (result.pass === 1) { system_message(result); }
+if (result.pass === 1) { system_message(result.message); }
 //upadte game output
 if ( result.pass == 2 ) { update_board_done(result); }
 //send move successful  action?
@@ -393,6 +402,13 @@ if ( result.pass == 3 )
   }
 //get games output results
 if (result.pass == 4) { get_games_done(result); }
+//login
+if (result.pass === 5)
+  {
+  get_game( gup('game') , gup('public_private'));
+  system_message(result.message);
+  }
+
 }
 
 function form_call( form_id_string )
@@ -417,9 +433,9 @@ jqxhr.fail( function(errorThrown,textStatus) { form_done( 'Error: ' + jqxhr.resp
 return false; //so form submit does not reset page and upset ajax
 }
 
-function system_message(result)
+function system_message(msg)
 {
-$('#dialog-message').html( result.message );
+$('#dialog-message').html( msg );
 $('#dialog-message').dialog( "open" );
 return 0;
 }
@@ -438,9 +454,10 @@ var on_click;
 
 if (player2 === null) {player2 = 'open';}
 url_link = url + '?game=' + game_number + '&public_private=' + username;
-on_click = 'onclick="get_game(\'' + game_number + '\' , \'' + username + '\');"';
+//on_click = 'onclick="get_game(\'' + game_number + '\' , \'' + username + '\');"';
 //direct link
-html = '<div class="fake_link" ' + on_click + '><u>' + game_number + '</u></div>';
+//html = '<div class="fake_link" ' + on_click + '><u>' + game_number + '</u></div>';
+html = "<a href='" + url_link + "'>" + game_number + '</a>';
 //players
 html += '&nbsp; (Player1: ' + player1 + ' , Player2: ' + player2 + ')';
 html += " Share Link: <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
@@ -569,7 +586,7 @@ function update_board_done( result )
 //user data comming
 next_move = result.next_move;
 var next_move_color = result.next_move_color;
-var message = "Next Move: "  + next_move + ' Target Lines: ' + next_move_color;
+var message = "Current Move: "  + next_move + ' Target Lines: ' + next_move_color;
 $('#next_move').html( message );
 //place pegs received from data????
 place_moves( result );
@@ -745,7 +762,7 @@ if ( confirm('Are you sure?') == 1 )
     $('#chat_board').html("");
     $('#board').css('width' , '0px' );
     $('#board').css('height' , '0px' );
-    form_done( 'You have been logged out' );
+    system_message( 'You have been logged out' );
     }
 return false; //so form submit does not reset page and upset ajax
 }

@@ -59,7 +59,7 @@ $logged_in = &login(); #sets / gets $username + password if any
 if ( $command eq 'login' ) { &check_login() }
 if ( $logged_in != 1)
     {#every command after this needs us to be logged in
-    &send_system_message("Fail: You need to login first.");
+    &send_system_message("Login or register for an account first.");
     }
 if ( $command eq 'create_game' ) { &create_game(); }
 if ( $command eq 'get_games' ) { &get_games(); }
@@ -128,7 +128,7 @@ sub register()
           print "Set-Cookie: $cookie_username\n";
           print "Set-Cookie: $cookie_password\n";
 
-         &send_system_message( "Account created for <font color='red'><b>$username</b></font>. Remember this username <font color='red'><b>$username</b></font>.");
+         &send_system_message( "Account created for <font color='red'><b>$username</b></font>. Remember this username <font color='red'><b>$username</b></font>." , 5);
         }
      else
           {
@@ -612,7 +612,7 @@ close FILE;
 
 sub login()
 {#the only time we return is if we logged in and we do it silently as we use this every time script is run
-#return 1 on success and a text message on fail
+#return 1 on success and THEN check_login sends a text message on fail
 $username = $in{'username'};
 $username =~ s/\s\W//; #no white space, only alpha numeric
 $password = $in{'password'};
@@ -663,7 +663,7 @@ sub check_login()
 {#only to tell client if a first 'logon' was successful
 if($logged_in == 1)
   {
-  &send_system_message('Logged in.');
+  &send_system_message('Logged in.' , 5);
   }
 else
   {
@@ -683,8 +683,18 @@ exit;
 
 sub send_system_message()
 {
-my $game_hash_ref->{'pass'} = 1; #0=game data 1=system message 2=means no output
+my $game_hash_ref;
+if ( exists $_[1] )
+  {#special cases like login/register 5 returned for special trigger.
+  $game_hash_ref->{'pass'} = $_[1];
+  }
+else
+  {#default is 1 simple system msg
+  $game_hash_ref->{'pass'} = 1; #0=game data 1=system message 2=means no output
+  }
+
 $game_hash_ref->{'message'} =  $_[0];
+
 my $message = $json->encode( $game_hash_ref );
 send_output($message);
 }
