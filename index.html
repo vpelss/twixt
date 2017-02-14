@@ -404,7 +404,10 @@ if (result.pass == 4) { get_games_done(result); }
 //login
 if (result.pass === 5)
   {
-  get_game( gup('game') , gup('public_private'));
+  if ( gup('game') )
+    {
+    get_game( gup('game') , gup('public_private'));
+    }
   system_message(result.message);
   }
 
