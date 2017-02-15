@@ -14,6 +14,8 @@ border: 1px solid black;
 #board_resizable
 {
 background-color: transparent;
+float: left;
+margin: 10px;
 }
 
 #game_number
@@ -79,6 +81,11 @@ border-left: solid blue;
 border-right:  solid blue;
 }
 
+#message_div
+{
+overflow: auto;
+}
+
 #chat_board
 {
 overflow: scroll;
@@ -117,6 +124,22 @@ padding-right: 10px;
 {
  cursor: pointer;
  float: left;
+}
+
+#tabs
+{
+clear: left;
+}
+
+#resize_button
+{
+float: left;
+margin-right: 10px;
+}
+
+#delete_form
+{
+//clear: left;
 }
 
 </STYLE>
@@ -224,23 +247,29 @@ return false;
 <a href='./'>Twixt Home</a>
 <div id='big_game'>
   <div id='board_resizable' class="ui-widget-content">
-  <div id='board'><pre id='chat_board' >Chat Board</pre></div>
+    <div id='board'><pre id='chat_board' >Chat Board</pre></div>
   </div>
-  <div id='game_number'></div>
-  <div id='next_move'></div>
-  <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' ></form>
-  <form id='delete_form'><input type='submit' value='Delete Game' onclick='return form_call("delete_form");' ><input name="command" type="hidden" value="delete_game" id='delete_game'></form>
-  <br>
-  <div id='message_div'>
-  <form id='chat_form'>
-  <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
-  <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
-  <input type='submit' id='message_form_submit' onclick='return send_chat();'>
-  </form>
-  </div>
-  <div id='chat_board_resizable' class="ui-widget-content">
-  <pre id='chat_board' >Chat Board</pre>
-  </div>
+
+    <div id='game_number'></div>
+    <div id='next_move'></div>
+    <div id='group_buttons'>
+      <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' ></form>
+      <form id='delete_form'><input type='submit' value='Delete Game' onclick='if(confirm("Delete Game? Are you sure?")){form_call("delete_form");};return false;'>
+    </div>
+    <input name="command" type="hidden" value="delete_game" id='delete_game'>
+    </form>
+    <br>
+    <div id='message_div'>
+      <form id='chat_form'>
+        <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
+        <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
+        <input type='submit' id='message_form_submit' onclick='return send_chat();'>
+      </form>
+      <div id='chat_board_resizable' class="ui-widget-content">
+        <pre id='chat_board' >Chat Board</pre>
+      </div>
+    </div>
+
 </div>
 
 <div id="dialog-message" title="Twixt"></div>
@@ -269,19 +298,19 @@ $( "#dialog-waiting" ).hide();
   <h3>Twixt</h3>
 <ul>
   <li>
-  Goal: Create a continuous line from one side of the board to the other before the other player.
+  Goal: Create a continuous chain of links from one side of the board to the other before the other player.
   </li>
   <li>
-  Player 1 uses solid lines and tries to connect the left and right sides (blue).
+  Player 1 uses solid links and tries to connect the left and right sides (blue).
   </li>
   <li>
-  Player 2 uses dashed lines and tries to connect the top and bottom sides (red).
+  Player 2 uses dashed links and tries to connect the top and bottom sides (red).
   </li>
   <li>
-  Players alternate placing their lines between the pegs on board. Solid goes first.
+  Players alternate placing their links between the pegs on board. Solid goes first.
   </li>
   <li>
-  Players may not place a line on a peg that is in the opponent's border rows.
+  Players may not place a link on a peg that is in the opponent's border rows.
   </li>
   <li>
   You may link to pegs which are your own. The links can only go between two pegs in a knight's move fashion and cannot cross another link of the opponent's but can cross your own.
@@ -462,7 +491,7 @@ url_link = url + '?game=' + game_number + '&public_private=' + username;
 html = "<a href='" + url_link + "'>" + game_number + '</a>';
 //players
 html += '&nbsp; (Player1: ' + player1 + ' , Player2: ' + player2 + ')';
-html += " Share Link: <a href='" + url_link + "' target='_blank'>" + url_link + '</a></br>' ;
+html += " Share Link: <a href='" + url_link + "'>" + url_link + '</a></br>' ;
 
 return html;
 }
