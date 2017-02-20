@@ -18,10 +18,32 @@ float: left;
 margin: 10px;
 }
 
+#not_board_resizable
+{
+
+}
+
 #game_number
 {
 float: left;
 padding-right: 10px;
+}
+
+#chat_board
+{
+position: relative;
+height: 100%;
+}
+
+#chat_form
+{
+width: 100%;
+}
+
+#chat_text_output_resizable
+{
+height: 50px;
+width: 100%;
 }
 
 .dot
@@ -79,22 +101,6 @@ border-left: solid blue;
 .left_line
 {
 border-right:  solid blue;
-}
-
-#message_div
-{
-overflow: auto;
-}
-
-#chat_board
-{
-overflow: scroll;
-height: 100%;
-}
-
-#chat_board_resizable
-{
-height: 50px;
 }
 
 #dialog-waiting /*center spinner*/
@@ -178,7 +184,7 @@ $( function() {
 
 //create / initialize resizable chat
 $( function() {
-    $( "#chat_board_resizable" ).resizable();
+    $( "#chat_text_output_resizable" ).resizable();
   } );
 
 var board_width;
@@ -235,7 +241,8 @@ function auto_size()
 {
 calculate_board_size();
 $( "#board_resizable" ).width( board_width );
-$( "#board_resizable" ).height( board_width );set_board_size();
+$( "#board_resizable" ).height( board_width );
+set_board_size();
 return false;
 }
 
@@ -245,31 +252,30 @@ return false;
 
 <body>
 <a href='./'>Twixt Home</a>
-<div id='big_game'>
+<div id='game_hide_show'>
   <div id='board_resizable' class="ui-widget-content">
-    <div id='board'><pre id='chat_board' >Chat Board</pre></div>
+    <div id='board'></div>
   </div>
-
+  <div id='not_board_resizable'>
     <div id='game_number'></div>
     <div id='next_move'></div>
     <div id='group_buttons'>
-      <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' ></form>
-      <form id='delete_form'><input type='submit' value='Delete Game' onclick='if(confirm("Delete Game? Are you sure?")){form_call("delete_form");};return false;'>
+      <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' >
+      </form>
+      <form id='delete_form'><input type='submit' value='Delete Game' onclick='if(confirm("Delete Game? Are you sure?")){form_call("delete_form");} return false;'>
+      <input name="command" type="hidden" value="delete_game" id='delete_game'>
+      </form>
     </div>
-    <input name="command" type="hidden" value="delete_game" id='delete_game'>
-    </form>
     <br>
-    <div id='message_div'>
+    <div id='chat_board'>
       <form id='chat_form'>
         <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
+        <textarea id='chat_text_output_resizable' class="ui-widget-content">Chat Board</textarea>
         <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
         <input type='submit' id='message_form_submit' onclick='return send_chat();'>
       </form>
-      <div id='chat_board_resizable' class="ui-widget-content">
-        <pre id='chat_board' >Chat Board</pre>
-      </div>
     </div>
-
+  </div>
 </div>
 
 <div id="dialog-message" title="Twixt"></div>
@@ -400,7 +406,7 @@ var three_x;
 var dot_width;
 var highlighted_peg;
 
-$('#big_game').hide();
+$('#game_hide_show').hide();
 
 function gup( name )
 {
@@ -448,7 +454,7 @@ function form_call( form_id_string )
 if ( form_id_string != 'form_update_board' && form_id_string != 'chat_form' && form_id_string != 'form_send_move' && form_id_string != delete_form )
   {
   window.clearTimeout( timer_id );
-  $('#big_game').hide();
+  $('#game_hide_show').hide();
   }
 var skip_wait = 0;
 if ( form_id_string == 'form_update_board') { skip_wait = 1; }
@@ -545,7 +551,7 @@ highlighted_peg = undefined; //required for board resizing. else first click is 
 
 function build_board()
 {
-$('#big_game').show();
+$('#game_hide_show').show();
 $('#list_games').html('');
 //fill board with pegs
 $('#board').html('');
@@ -622,8 +628,8 @@ $('#next_move').html( message );
 //place pegs received from data????
 place_moves( result );
 //place chat text
-$('#chat_board').html( result.chat_text );
-$('#chat_board').scrollTop( 100000 ); //scroll to bottom
+$('#chat_text_output_resizable').html( result.chat_text );
+$('#chat_text_output_resizable').scrollTop( 100000 ); //scroll to bottom
 }
 
 function place_moves( result )
@@ -782,7 +788,7 @@ function logout()
 {
 if ( confirm('Are you sure?') == 1 )
     {
-    $('#big_game').hide();
+    $('#game_hide_show').hide();
     clearInterval( timer_id );
     Cookies.remove('username');
     Cookies.remove('password');
@@ -790,7 +796,7 @@ if ( confirm('Are you sure?') == 1 )
     Cookies.remove('public_private');
     $('#board').html("");
     $('#game_number').html("");
-    $('#chat_board').html("");
+    //$('#chat_board').html("");
     $('#board').css('width' , '0px' );
     $('#board').css('height' , '0px' );
     system_message( 'You have been logged out' );
