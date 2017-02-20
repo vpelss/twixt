@@ -22,6 +22,10 @@ margin: 10px;
 {
 float: left;
 }
+.board_row
+{
+
+}
 
 #game_number
 {
@@ -237,8 +241,8 @@ get_game( Cookies.get('game') , Cookies.get('public_private')  );
 function auto_size()
 {
 calculate_board_size();
-$( "#board_resizable" ).width( board_width );
-$( "#board_resizable" ).height( board_width );
+$( "#board_resizable" ).width( board_width);
+$( "#board_resizable" ).height( board_width);
 set_board_size();
 //set chat_board_rezizable
 var chat_width = $(window).innerWidth() - board_width;
@@ -275,7 +279,7 @@ return false;
         <div id='chat_wrapper_resizable'>
           <textarea readonly id='chat_text_output_resizable'>Chat Board</textarea>
         </div>
-        <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
+        <input type='text' name='chat_text' id='chat_text' placeholder='type message here, then enter' size='40'>
         <input type='submit' id='message_form_submit' onclick='return send_chat();'>
       </form>
     </div>
@@ -558,44 +562,59 @@ highlighted_peg = undefined; //required for board resizing. else first click is 
 
 function build_board()
 {
+var board_string = '';
 $('#game_hide_show').show();
 $('#list_games').html('');
 //fill board with pegs
 $('#board').html('');
-$('#board').append("<div CLASS='corner' id=0_0></div>");
+//first line
+board_string += "<div class='board_row'>";
+board_string += "<div CLASS='corner' id=0_0></div>";
 for (x=1 ; x<23 ; x++)
 	{
-	$('#board').append("<div CLASS='dot' id=" + x + "_0></div>");
+	board_string += "<div CLASS='dot' id=" + x + "_0></div>";
 	}
-$('#board').append("<div CLASS='corner' id=23_0></div>");
+board_string += "<div CLASS='corner' id=23_0></div>";
+board_string += "</div>";
+//next 22 lines
 for (y=1 ; y<23 ; y++)
 	{
+  board_string += "<div class='board_row'>";
 	for (x=0 ; x<24 ; x++)
 		{
-		$('#board').append("<div CLASS='dot' id=" + x + "_" + y + "></div>");
+		board_string += "<div CLASS='dot' id=" + x + "_" + y + "></div>";
 		}
+  board_string += "</div>";
 	}
-$('#board').append("<div CLASS='corner' id=0_23></div>");
+//last line
+board_string += "<div class='board_row'>";
+board_string += "<div CLASS='corner' id=0_23></div>";
 for (x=1 ; x<23 ; x++)
 	{
-	$('#board').append("<div CLASS='dot' id=" + x + "_23></div>");
+	board_string += "<div CLASS='dot' id=" + x + "_23></div>";
 	}
-$('#board').append("<div CLASS='corner' id=23_23></div>");
+board_string += "<div CLASS='corner' id=23_23></div>";
+board_string += "</div>";
+
+
+//div to add moves
+board_string +="<div id='moves'></div>";
+
+//div to add legal move markers
+board_string +="<div id='markers'></div>";
+
+$('#board').append( board_string) ;
+
+//now we can do css and event assignments
+
+//size board
+resize_board();
 
 //set line class for edges of board
 $( ".dot[id*='_0'" ).addClass('top_line');
 $( ".dot[id*='_23'" ).addClass('bottom_line');
 $( ".dot[id^='0'" ).addClass('left_line');
 $( ".dot[id^='23'" ).addClass('right_line');
-
-//size board
-resize_board();
-
-//div to add moves
-$('#board').append("<div id='moves'></div>");
-
-//div to add legal move markers
-$('#board').append("<div id='markers'></div>");
 
 $( ".dot" ).on("contextmenu",function(){
      return false;
@@ -617,8 +636,8 @@ two_x = dot_width * 2;
 three_x = dot_width * 3;
 
 //set board size
-$('#board').css('width' , board_width  + 'px' );
-$('#board').css('height' , board_width  + 'px' );
+$('#board').css('width' , board_width + 'px' );
+$('#board').css('height' , board_width + 'px' );
 //set dot sizes
 $('.dot , .corner').css('width' , dot_width +'px' );
 $('.dot , .corner').css('height' , dot_width + 'px' );
