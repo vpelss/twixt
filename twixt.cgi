@@ -497,7 +497,7 @@ sub update_board()
         }
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet
-        &send_system_message( "Not your move dude." );
+        #&send_system_message( "Not your move dude." );
         }
     #check if we are crossing other player's move
     my $other_player_name;
@@ -552,12 +552,12 @@ sub update_board()
     if ( $game_hash_ref->{'next_move'} eq $game_hash_ref->{'user1'} )
         {
         $game_hash_ref->{'next_move'} = $game_hash_ref->{'user2'};
-        $game_hash_ref->{'next_move_color'} = 'red';
+        $game_hash_ref->{'next_move_color'} = 'Red. Top to bottom.';
         }
     else
         {
         $game_hash_ref->{'next_move'} = $game_hash_ref->{'user1'};
-        $game_hash_ref->{'next_move_color'} = 'blue';
+        $game_hash_ref->{'next_move_color'} = 'Blue. Right to left.';
         }
 
     &save_game_data_hash( $game_hash_ref ); #save all changes

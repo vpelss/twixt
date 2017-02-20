@@ -20,30 +20,26 @@ margin: 10px;
 
 #not_board_resizable
 {
-
+float: left;
 }
 
 #game_number
 {
-float: left;
 padding-right: 10px;
 }
 
 #chat_board
 {
-position: relative;
-height: 100%;
 }
 
 #chat_form
 {
-width: 100%;
 }
 
 #chat_text_output_resizable
 {
 height: 50px;
-width: 100%;
+width: 300px;
 }
 
 .dot
@@ -184,6 +180,7 @@ $( function() {
 
 //create / initialize resizable chat
 $( function() {
+    //$( "#chat_wrapper_resizable" ).resizable();
     $( "#chat_text_output_resizable" ).resizable();
   } );
 
@@ -243,6 +240,9 @@ calculate_board_size();
 $( "#board_resizable" ).width( board_width );
 $( "#board_resizable" ).height( board_width );
 set_board_size();
+//set chat_board_rezizable
+var chat_width = $(window).innerWidth() - board_width;
+$('#chat_text_output_resizable').width( chat_width );
 return false;
 }
 
@@ -257,8 +257,6 @@ return false;
     <div id='board'></div>
   </div>
   <div id='not_board_resizable'>
-    <div id='game_number'></div>
-    <div id='next_move'></div>
     <div id='group_buttons'>
       <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' >
       </form>
@@ -267,10 +265,16 @@ return false;
       </form>
     </div>
     <br>
+    <div id='game_number'></div>
+    <br>
+    <div id='next_move'></div>
+    <br>
     <div id='chat_board'>
       <form id='chat_form'>
         <input name="command" type="hidden" value="send_chat" id='command_send_chat'>
-        <textarea id='chat_text_output_resizable' class="ui-widget-content">Chat Board</textarea>
+        <div id='chat_wrapper_resizable'>
+          <textarea readonly id='chat_text_output_resizable'>Chat Board</textarea>
+        </div>
         <input type='text' name='chat_text' id='chat_text' placeholder='type message here then enter' size='40'>
         <input type='submit' id='message_form_submit' onclick='return send_chat();'>
       </form>
@@ -307,10 +311,10 @@ $( "#dialog-waiting" ).hide();
   Goal: Create a continuous chain of links from one side of the board to the other before the other player.
   </li>
   <li>
-  Player 1 uses solid links and tries to connect the left and right sides (blue).
+  Player 1 uses solid links and tries to connect the left and right sides (Blue).
   </li>
   <li>
-  Player 2 uses dashed links and tries to connect the top and bottom sides (red).
+  Player 2 uses dashed links and tries to connect the top and bottom sides (Red).
   </li>
   <li>
   Players alternate placing their links between the pegs on board. Solid goes first.
@@ -319,12 +323,15 @@ $( "#dialog-waiting" ).hide();
   Players may not place a link on a peg that is in the opponent's border rows.
   </li>
   <li>
-  You may link to pegs which are your own. The links can only go between two pegs in a knight's move fashion and cannot cross another link of the opponent's but can cross your own.
+  You may link to pegs which are your own. The links can only go between two pegs in a knight's move fashion (two over and one up OR two up and one over) and cannot cross another link of the opponent's but can cross your own.
   </li>
   <li>
   You win if you make a continuous chain of linked pegs connecting your border rows. If neither side can achieve this, the game is a draw.
   </li>
 </ul>
+<p>Example:</p>
+<img src='./images/example.png'>
+
 </div>
 
 <div id='list_games'>
@@ -541,7 +548,7 @@ function get_game( game , public_private )
 {
 $( "#dialog-waiting" ).show();
 build_board();
-$('#game_number').html("<div id='current_game'>Game: " + Cookies.get('game') + "</div>");
+$('#game_number').html("<div id='current_game'>Game #: " + Cookies.get('game') + "</div>");
 Cookies.set('game', game);
 Cookies.set('public_private', public_private);
 timer_id = setInterval( function(){ form_call("form_update_board"); } , 5000);
@@ -623,7 +630,12 @@ function update_board_done( result )
 //user data comming
 next_move = result.next_move;
 var next_move_color = result.next_move_color;
-var message = "Current Move: "  + next_move + ' Target Lines: ' + next_move_color;
+var message = "Current Move: "  + next_move;
+if ( next_move == Cookies.get('username') )
+  {
+  message = "<font color='red'><b>" + message + "</b></font>";
+  }
+message +=  '<br>Target Lines: ' + next_move_color;
 $('#next_move').html( message );
 //place pegs received from data????
 place_moves( result );
