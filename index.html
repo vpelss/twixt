@@ -501,21 +501,14 @@ return 0;
 
 function generate_link_line( game_number , username , player1 , player2 )
 {
-//var game_number;
-//var username = Cookies.get('username');
 var html;
 var pathArray = location.href.split( '?' );
 var url = pathArray[0];
 var url_link ;
-//var player1;
-//var player2;
-//var on_click;
 
 if (player2 === null) {player2 = 'open';}
 url_link = url + '?game=' + game_number + '&public_private=' + username;
-//on_click = 'onclick="get_game(\'' + game_number + '\' , \'' + username + '\');"';
 //direct link
-//html = '<div class="fake_link" ' + on_click + '><u>' + game_number + '</u></div>';
 html = "<a href='" + url_link + "'>" + game_number + '</a>';
 //players
 html += '&nbsp; (Player1: ' + player1 + ' , Player2: ' + player2 + ')';
@@ -530,12 +523,8 @@ $("#dialog-waiting" ).hide();
 var game_number;
 var username = Cookies.get('username');
 var html;
-//var pathArray = location.href.split( '?' );
-//var url = pathArray[0];
-//var url_link ;
 var player1;
 var player2;
-//var on_click;
 
 html = '<p>Public games are for anyone to join. First come, first serve. Private games can only be seen by you and those you send a copy of the link to.</p>';
 html += 'Public</br>';
