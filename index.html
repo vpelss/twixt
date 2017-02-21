@@ -505,15 +505,24 @@ var html;
 var pathArray = location.href.split( '?' );
 var url = pathArray[0];
 var url_link ;
-
-if (player2 === null) {player2 = 'open';}
+var icon;
+if (player2 === null)
+  {
+  player2 = 'open';
+  icon = 'yes.png';
+  }
+else
+  {
+  icon = 'no.png';
+  }
 url_link = url + '?game=' + game_number + '&public_private=' + username;
 //direct link
 html = "<a href='" + url_link + "'>" + game_number + '</a>';
 //players
 html += '&nbsp; (Player1: ' + player1 + ' , Player2: ' + player2 + ')';
 html += " Share Link: <a href='" + url_link + "'>" + url_link + '</a></br>' ;
-
+//html = '<font color="' + color + '">' + html + '</font>';
+html = '<img width="15px" src="./images/' + icon + '">' + html + '';
 return html;
 }
 

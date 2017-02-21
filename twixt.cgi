@@ -610,6 +610,7 @@ return $game_hash_ref;
 sub save_game_data_hash()
 {
 my $game_hash_ref = $_[0];
+
 open FILE , ">$path_to_games/$public_private/$game/$game_filename$game_extension";
 my $message = $json->encode( $game_hash_ref );
 print FILE $message;
