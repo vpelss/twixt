@@ -467,7 +467,7 @@ if (result.pass === 5)
 function form_call( form_id_string )
 {
 //close existing game
-var close_game_forms = [ 'form_create_game' , 'form_login' , 'form_logout' , 'form_register' , 'form_forgot_password' , 'form_forgot_username' , 'form_reset_password' , 'form_get_games' ];
+var close_game_forms = [ 'form_create_game' , 'form_login' , 'form_logout' , 'form_register' , 'form_forgot_password' , 'form_forgot_username' , 'form_reset_password' , 'form_get_games' , 'form_delete_game' ];
 for (var index = 0; index < close_game_forms.length; ++index)
   {
   if ( form_id_string == close_game_forms[index] )
