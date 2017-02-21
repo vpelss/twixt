@@ -1,0 +1,1 @@
+{"number_of_users":1,"points":{"0_0":"corner","23_23":"corner","23_0":"corner","0_23":"corner"},"next_move":"a","next_move_color":"blue","moves":{},"game":"1487689783","user1":"a"}

@@ -67,6 +67,7 @@ if ( $command eq 'update_board' ) { &update_board(); }
 if ( $command eq 'send_move' ) { &incomming_move(); }
 if ( $command eq 'send_chat' ) { &incomming_chat(); }
 if ( $command eq 'delete_game' ) { &delete_game(); }
+if ( $command eq 'undo_move' ) { &undo_move(); }
 
 &send_system_message("End of code. Nothing was done. Command: $command");
 } #main done
@@ -294,6 +295,11 @@ foreach my $file ( @dir )
   }
 $rs = rmdir($dir);
 &send_system_message("Game deleted.");
+}
+
+sub undo_move()
+{
+&send_system_message("Working on Undo Move.");
 }
 
 sub create_game()

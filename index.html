@@ -137,15 +137,14 @@ padding-right: 10px;
 clear: left;
 }
 
-#resize_button
+#form_undo_move , #form_resize_game
 {
 float: left;
-margin-right: 10px;
 }
 
-#delete_form
+#form_undo_move , #form_resize_game , #form_delete_game
 {
-//clear: left;
+margin-right: 10px;
 }
 
 </STYLE>
@@ -195,7 +194,8 @@ $( document ).ready(function()
   calculate_board_size();
   $( "#board_resizable" ).width( board_width );
 
-  $( "#board_resizable" ).on( "resizestop", function( event , ui )
+  //$( "#board_resizable" ).on( "resizestop", function( event , ui )
+  $( "#board_resizable" ).on( "resizestop", function( )
     {
     board_width = $( "#board_resizable" ).width();
     set_board_size();
@@ -262,9 +262,14 @@ return false;
   </div>
   <div id='not_board_resizable'>
     <div id='group_buttons'>
-      <form id='resize_button'><input type='submit' value='Auto Resize' onclick='return auto_size();' >
+      <form id='form_undo_move'><input type='submit' value='Undo Move' onclick='return form_call("form_undo_move");' >
+        <input name="command" type="hidden" value="undo_move" id='command_undo_move'>
       </form>
-      <form id='delete_form'><input type='submit' value='Delete Game' onclick='if(confirm("Delete Game? Are you sure?")){form_call("delete_form");} return false;'>
+      <form id='form_resize_game'>
+        <input type='submit' value='Auto Resize' onclick='return auto_size();' >
+      </form>
+      <form id='form_delete_game'>
+        <input type='submit' value='Delete Game' onclick='if(confirm("Delete Game? Are you sure?")){form_call("form_delete_game");} return false;'>
       <input name="command" type="hidden" value="delete_game" id='delete_game'>
       </form>
     </div>
@@ -462,11 +467,17 @@ if (result.pass === 5)
 function form_call( form_id_string )
 {
 //close existing game
-if ( form_id_string != 'form_update_board' && form_id_string != 'chat_form' && form_id_string != 'form_send_move' && form_id_string != delete_form )
+var close_game_forms = [ 'form_create_game' , 'form_login' , 'form_logout' , 'form_register' , 'form_forgot_password' , 'form_forgot_username' , 'form_reset_password' , 'form_get_games' ];
+for (var index = 0; index < close_game_forms.length; ++index)
   {
-  window.clearTimeout( timer_id );
-  $('#game_hide_show').hide();
+  if ( form_id_string == close_game_forms[index] )
+      {
+      window.clearTimeout( timer_id );
+      $('#game_hide_show').hide();
+      break;
+      }
   }
+
 var skip_wait = 0;
 if ( form_id_string == 'form_update_board') { skip_wait = 1; }
 if ( form_id_string == 'chat_form') { skip_wait = 1; }
@@ -498,7 +509,7 @@ var url = pathArray[0];
 var url_link ;
 //var player1;
 //var player2;
-var on_click;
+//var on_click;
 
 if (player2 === null) {player2 = 'open';}
 url_link = url + '?game=' + game_number + '&public_private=' + username;
@@ -519,12 +530,12 @@ $("#dialog-waiting" ).hide();
 var game_number;
 var username = Cookies.get('username');
 var html;
-var pathArray = location.href.split( '?' );
-var url = pathArray[0];
-var url_link ;
+//var pathArray = location.href.split( '?' );
+//var url = pathArray[0];
+//var url_link ;
 var player1;
 var player2;
-var on_click;
+//var on_click;
 
 html = '<p>Public games are for anyone to join. First come, first serve. Private games can only be seen by you and those you send a copy of the link to.</p>';
 html += 'Public</br>';
@@ -782,10 +793,11 @@ var the_array = id.split( '_' ) ;
 x1 = the_array[0];
 y1 = the_array[1];
 var marker_array = [[1,-2] , [2,-1] , [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2]];
-for(var offset in marker_array)
+//for(var offset in marker_array)
+for (var index = 0; index  < marker_array.length; ++index)
     {
-    x = Number(x1) + marker_array[offset][0];
-    y = Number(y1) + marker_array[offset][1];
+    x = Number(x1) + marker_array[index][0];
+    y = Number(y1) + marker_array[index][1];
     var legal_move_point = x.toString() + '_' + y.toString() ;
     legal_move_id = "#" + legal_move_point;
     if($(legal_move_id).length !== 0)
