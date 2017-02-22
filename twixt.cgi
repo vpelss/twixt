@@ -474,7 +474,7 @@ sub update_board()
         }
     if ( $game_hash_ref->{'number_of_users'} ne 2 )
       {
-      #&send_system_message( "Awaiting another player first." );
+      &send_system_message( "Awaiting another player first." );
       }
     if ( exists  $game_hash_ref->{'moves'}->{ $move_string } )
         {#existing move
@@ -503,7 +503,7 @@ sub update_board()
         }
     if ( $username ne $game_hash_ref->{'next_move'} )
         {#not your move yet
-        #&send_system_message( "Not your move dude." );
+        &send_system_message( "Not your move dude." );
         }
     #check if we are crossing other player's move
     my $other_player_name;

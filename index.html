@@ -605,7 +605,6 @@ for (x=1 ; x<23 ; x++)
 board_string += "<div CLASS='corner' id=23_23></div>";
 board_string += "</div>";
 
-
 //div to add moves
 board_string +="<div id='moves'></div>";
 
@@ -645,8 +644,8 @@ two_x = dot_width * 2;
 three_x = dot_width * 3;
 
 //set board size
-$('#board').css('width' , board_width + 'px' );
-$('#board').css('height' , board_width + 'px' );
+$('#board').css('width' , board_width + 1 + 'px' ); // + 1 to fix even / odd firefox artifacts
+$('#board').css('height' , board_width + 1 + 'px' );
 //set dot sizes
 $('.dot , .corner').css('width' , dot_width +'px' );
 $('.dot , .corner').css('height' , dot_width + 'px' );
@@ -758,9 +757,9 @@ if (which == 3)
   }
 if ( next_move != Cookies.get('username') )
   {//local move block
-  //$('#dialog-message').html('It is not your move yet.');
-  //$('#dialog-message').dialog( "open" );
-  //return 0;
+  $('#dialog-message').html('It is not your move yet.');
+  $('#dialog-message').dialog( "open" );
+  return 0;
   }
 if (highlighted_peg === undefined)
 	{
