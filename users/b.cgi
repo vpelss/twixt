@@ -1,2 +1,0 @@
-yuMXMVJrvLQRs
-vpelss@gmail.com
